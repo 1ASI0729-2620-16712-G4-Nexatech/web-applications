@@ -1,0 +1,15 @@
+{
+  "routes": [
+    {
+      "id": 1,
+      "name": "Huayhuash Alpine Circuit",
+      "origin": "Llamac, Áncash",
+      "destination": "Llamac, Áncash",
+      "distanceKm": 84.5,
+      "elevationGainMeters": 5240,
+      "difficulty": "Advanced",
+      "estimatedDurationMinutes": 5760,
+      "status": "draft"
+    }
+  ]
+}

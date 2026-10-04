@@ -4,6 +4,83 @@
   },
   "language": {
     "english": "Inglés",
-    "spanish": "Español"
+    "spanish": "Español",
+    "selector": "Idioma"
+  },
+  "layout": {
+    "dashboard": "Panel de operaciones",
+    "navigation": "Navegación de operaciones",
+    "routeSetupEnvironment": "Entorno de configuración de rutas",
+    "commandBase": "Base de comando de operaciones",
+    "sector": "Sector Andes y Amazonía",
+    "routesAndCheckpoints": "Rutas y puntos de control"
+  },
+  "common": {
+    "newRoute": "Nueva ruta",
+    "cancel": "Cancelar",
+    "saveRoute": "Guardar ruta",
+    "backToRoutes": "Volver a rutas",
+    "resetFilters": "Restablecer filtros",
+    "loading": "Cargando rutas..."
+  },
+  "routes": {
+    "title": "Rutas y puntos de control",
+    "description": "Registra corredores de expedición y sus datos geográficos y operativos.",
+    "registeredCount": "{count} rutas registradas",
+    "searchPlaceholder": "Buscar rutas por nombre o ubicación...",
+    "difficultyFilter": "Dificultad",
+    "statusFilter": "Estado",
+    "allDifficulties": "Todas las dificultades",
+    "allStatuses": "Todos los estados",
+    "showing": "Mostrando {filtered} de {total} rutas",
+    "routeSetup": "Configuración de ruta",
+    "origin": "Origen",
+    "destination": "Destino",
+    "distance": "Distancia",
+    "elevationGain": "Desnivel acumulado",
+    "estimatedDuration": "Duración estimada",
+    "addCheckpoints": "Agrega puntos de control para habilitar esta ruta.",
+    "noRoutesFound": "No se encontraron rutas",
+    "noRoutesDescription": "Cambia los filtros o registra una nueva ruta.",
+    "status": {
+      "draft": "Borrador — Pendiente de puntos de control"
+    },
+    "difficulty": {
+      "Beginner": "Principiante",
+      "Intermediate": "Intermedio",
+      "Advanced": "Avanzado",
+      "Expert": "Experto"
+    }
+  },
+  "routeForm": {
+    "title": "Nueva ruta",
+    "description": "Define los datos geográficos y operativos. La ruta permanece en borrador hasta configurar sus puntos de control.",
+    "identityTitle": "Identidad de la ruta",
+    "identityDescription": "Usa un nombre claro y único para el corredor de expedición.",
+    "geographicTitle": "Datos geográficos",
+    "geographicDescription": "Especifica las ubicaciones y características físicas de la ruta.",
+    "operationalTitle": "Datos operativos",
+    "operationalDescription": "Define la duración estimada usada en la planificación futura de expediciones.",
+    "routeName": "Nombre de ruta",
+    "routeNamePlaceholder": "ej. Circuito Alpino Huayhuash",
+    "originPlaceholder": "ej. Llamac, Áncash",
+    "destinationPlaceholder": "ej. Llamac, Áncash",
+    "difficultyPlaceholder": "Selecciona la dificultad",
+    "distanceKm": "Distancia (km)",
+    "elevationGainMeters": "Desnivel acumulado (m)",
+    "estimatedDurationHours": "Duración estimada (horas)"
+  },
+  "validation": {
+    "routeNameRequired": "El nombre de la ruta es obligatorio.",
+    "originRequired": "El origen es obligatorio.",
+    "destinationRequired": "El destino es obligatorio.",
+    "distanceInvalid": "La distancia debe ser mayor que cero.",
+    "elevationInvalid": "El desnivel acumulado debe ser cero o mayor.",
+    "difficultyRequired": "La dificultad es obligatoria.",
+    "durationInvalid": "La duración estimada debe ser mayor que cero."
+  },
+  "errors": {
+    "routeCreationFailed": "No se pudo crear la ruta.",
+    "routeNameDuplicated": "Ya existe una ruta con este nombre."
   }
 }

@@ -4,6 +4,83 @@
   },
   "language": {
     "english": "English",
-    "spanish": "Spanish"
+    "spanish": "Spanish",
+    "selector": "Language"
+  },
+  "layout": {
+    "dashboard": "Operations Dashboard",
+    "navigation": "Operations navigation",
+    "routeSetupEnvironment": "Route setup environment",
+    "commandBase": "Operations Command Base",
+    "sector": "Andes and Amazon Sector",
+    "routesAndCheckpoints": "Routes and checkpoints"
+  },
+  "common": {
+    "newRoute": "New route",
+    "cancel": "Cancel",
+    "saveRoute": "Save route",
+    "backToRoutes": "Back to routes",
+    "resetFilters": "Reset filters",
+    "loading": "Loading routes..."
+  },
+  "routes": {
+    "title": "Routes and checkpoints",
+    "description": "Register expedition corridors and their geographic and operational data.",
+    "registeredCount": "{count} registered routes",
+    "searchPlaceholder": "Search routes by name or location...",
+    "difficultyFilter": "Difficulty",
+    "statusFilter": "Status",
+    "allDifficulties": "All difficulties",
+    "allStatuses": "All statuses",
+    "showing": "Showing {filtered} of {total} routes",
+    "routeSetup": "Route setup",
+    "origin": "Origin",
+    "destination": "Destination",
+    "distance": "Distance",
+    "elevationGain": "Elevation gain",
+    "estimatedDuration": "Estimated duration",
+    "addCheckpoints": "Add checkpoints to enable this route.",
+    "noRoutesFound": "No routes found",
+    "noRoutesDescription": "Change the filters or register a new route.",
+    "status": {
+      "draft": "Draft — Pending checkpoints"
+    },
+    "difficulty": {
+      "Beginner": "Beginner",
+      "Intermediate": "Intermediate",
+      "Advanced": "Advanced",
+      "Expert": "Expert"
+    }
+  },
+  "routeForm": {
+    "title": "New route",
+    "description": "Define geographic and operational data. The route remains in draft until checkpoints are configured.",
+    "identityTitle": "Route identity",
+    "identityDescription": "Use a clear, unique name for the expedition corridor.",
+    "geographicTitle": "Geographic data",
+    "geographicDescription": "Specify the locations and physical characteristics of the route.",
+    "operationalTitle": "Operational data",
+    "operationalDescription": "Set the estimated duration used in future expedition planning.",
+    "routeName": "Route name",
+    "routeNamePlaceholder": "e.g. Huayhuash Alpine Circuit",
+    "originPlaceholder": "e.g. Llamac, Áncash",
+    "destinationPlaceholder": "e.g. Llamac, Áncash",
+    "difficultyPlaceholder": "Select difficulty",
+    "distanceKm": "Distance (km)",
+    "elevationGainMeters": "Elevation gain (m)",
+    "estimatedDurationHours": "Estimated duration (hours)"
+  },
+  "validation": {
+    "routeNameRequired": "Route name is required.",
+    "originRequired": "Origin is required.",
+    "destinationRequired": "Destination is required.",
+    "distanceInvalid": "Distance must be greater than zero.",
+    "elevationInvalid": "Elevation gain must be zero or greater.",
+    "difficultyRequired": "Difficulty is required.",
+    "durationInvalid": "Estimated duration must be greater than zero."
+  },
+  "errors": {
+    "routeCreationFailed": "The route could not be created.",
+    "routeNameDuplicated": "A route with this name already exists."
   }
 }

@@ -43,8 +43,8 @@ const primeUiLicenseKey = import.meta.env.VITE_PRIME_UI_LICENSE_KEY;
 // noinspection JSCheckFunctionSignatures
 createApp(App)
     .use(i18n)
-    //.use(PrimeVue, {theme: { preset: Material}, ripple: true, license: primeUiLicenseKey})
-    .use(PrimeVue, { theme: { preset: Material }, ripple: true })
+    .use(PrimeVue, {theme: { preset: Material}, ripple: true, license: primeUiLicenseKey})
+    //.use(PrimeVue, { theme: { preset: Material }, ripple: true })
     .use(ConfirmationService)
     .use(DialogService)
     .use(ToastService)
