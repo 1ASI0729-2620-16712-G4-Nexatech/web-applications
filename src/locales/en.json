@@ -24,7 +24,8 @@
     "loading": "Loading routes...",
     "configureCheckpoints": "Configure checkpoints",
     "configureTimeWindows": "Configure time windows",
-    "manageGroups": "Manage groups"
+    "manageGroups": "Manage groups",
+    "backToGroups": "Back to groups"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -89,7 +90,9 @@
     "expeditionGroupNameRequired": "Group name is required.",
     "expeditionGroupDepartureDateRequired": "Departure date is required.",
     "expeditionGroupCapacityInvalid": "Maximum capacity must be greater than zero.",
-    "fieldGuideRequired": "Select a field guide before assigning."
+    "fieldGuideRequired": "Select a field guide before assigning.",
+    "manifestFullNameRequired": "Full name is required.",
+    "manifestIdentityDocumentRequired": "Identity document is required."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
@@ -104,7 +107,11 @@
     "expeditionGroupCreationFailed": "The expedition group could not be created.",
     "routeNotEnabledForGroups": "The route must be enabled before creating expedition groups.",
     "expeditionGroupDepartureDateInPast": "Departure date cannot be earlier than today.",
-    "fieldGuideAssignmentFailed": "The field guide could not be assigned."
+    "fieldGuideAssignmentFailed": "The field guide could not be assigned.",
+    "manifestEntryCreationFailed": "The participant could not be registered.",
+    "manifestEntryDocumentDuplicated": "A participant with this identity document is already registered in this group.",
+    "manifestEntryDateConflict": "This identity document is already registered in another group departing on the same date.",
+    "manifestEntryCapacityExceeded": "This group has reached its maximum capacity."
   },
 
   "checkpoints": {
@@ -155,6 +162,20 @@
     "noFieldGuideAssigned": "No field guide assigned",
     "assignFieldGuide": "Assign field guide",
     "fieldGuideDateConflictWarning": "This field guide already has another group departing on the same date.",
-    "confirmAssignAnyway": "Assign anyway"
+    "confirmAssignAnyway": "Assign anyway",
+    "viewManifest": "View manifest"
+  },
+  "manifest": {
+    "title": "Tourist manifest",
+    "description": "Register the tourists participating in this expedition group.",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "e.g. Ana Torres",
+    "identityDocument": "Identity document",
+    "identityDocumentPlaceholder": "e.g. 70451236",
+    "addEntry": "Register participant",
+    "registeredCount": "{count} / {capacity} registered participants",
+    "noEntries": "No participants registered",
+    "noEntriesDescription": "Register the first participant for this expedition group.",
+    "capacityReached": "This group has reached its maximum capacity."
   }
 }
