@@ -25,7 +25,8 @@
     "configureCheckpoints": "Configurar puntos de control",
     "configureTimeWindows": "Configurar ventanas de tiempo",
     "manageGroups": "Gestionar grupos",
-    "backToGroups": "Volver a grupos"
+    "backToGroups": "Volver a grupos",
+    "progress": "Seguimiento"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -111,7 +112,8 @@
     "manifestEntryCreationFailed": "No se pudo registrar al participante.",
     "manifestEntryDocumentDuplicated": "Ya hay un participante registrado con este documento de identidad en este grupo.",
     "manifestEntryDateConflict": "Este documento de identidad ya está registrado en otro grupo con salida en la misma fecha.",
-    "manifestEntryCapacityExceeded": "Este grupo alcanzó su capacidad máxima."
+    "manifestEntryCapacityExceeded": "Este grupo alcanzó su capacidad máxima.",
+    "groupProgressFetchFailed": "No se pudo cargar la información de seguimiento."
   },
 
   "checkpoints": {
@@ -177,5 +179,25 @@
     "noEntries": "No hay participantes registrados",
     "noEntriesDescription": "Registra el primer participante de este grupo de expedición.",
     "capacityReached": "Este grupo alcanzó su capacidad máxima."
+  },
+  "groupProgress": {
+    "title": "Seguimiento de progreso de grupos",
+    "description": "Supervisa el progreso estimado de los grupos de expedición activos.",
+    "lastConfirmedCheckpoint": "Último checkpoint confirmado",
+    "currentSegment": "Tramo actual",
+    "estimatedProgress": "Progreso estimado",
+    "synchronizedAt": "Última sincronización",
+    "status": {
+      "on-track": "En curso",
+      "delayed": "Con retraso"
+    },
+    "risk": {
+      "low": "Riesgo bajo",
+      "medium": "Riesgo medio",
+      "high": "Riesgo alto"
+    },
+    "staleWarning": "Sin sincronización reciente. El progreso mostrado es una estimación.",
+    "tourNotActive": "El seguimiento se habilita al iniciar el recorrido de este grupo.",
+    "noGroups": "No se encontraron grupos de expedición"
   }
 }
