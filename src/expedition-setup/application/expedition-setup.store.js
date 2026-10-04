@@ -6,6 +6,7 @@ import {
     ExpectedTimeWindow,
 } from '../domain/model/expected-time-window.entity.js';
 import { ExpeditionGroup } from '../domain/model/expedition-group.entity.js';
+import { FieldGuide } from '../domain/model/field-guide.entity.js';
 import { RouteAssembler } from '../infrastructure/route.assembler.js';
 import { CheckpointAssembler } from '../infrastructure/checkpoint.assembler.js';
 import {
@@ -14,6 +15,9 @@ import {
 import {
     ExpeditionGroupAssembler,
 } from '../infrastructure/expedition-group.assembler.js';
+import {
+    FieldGuideAssembler,
+} from '../infrastructure/field-guide.assembler.js';
 import { ExpeditionSetupApi } from '../infrastructure/expedition-setup-api.js';
 
 const expeditionSetupApi = new ExpeditionSetupApi();
@@ -29,11 +33,13 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     const checkpoints = ref([]);
     const expectedTimeWindows = ref([]);
     const expeditionGroups = ref([]);
+    const fieldGuides = ref([]);
     const errors = ref([]);
     const routesLoaded = ref(false);
     const checkpointsLoaded = ref(false);
     const expectedTimeWindowsLoaded = ref(false);
     const expeditionGroupsLoaded = ref(false);
+    const fieldGuidesLoaded = ref(false);
 
     const routesCount = computed(() => (
         routesLoaded.value ? routes.value.length : 0
@@ -91,6 +97,19 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             .catch(() => {
                 errors.value.push(
                     createApplicationError('errors.expeditionGroupCreationFailed'),
+                );
+            });
+    }
+
+    function fetchFieldGuides() {
+        return expeditionSetupApi.getFieldGuides()
+            .then((response) => {
+                fieldGuides.value = FieldGuideAssembler.toEntitiesFromResponse(response);
+                fieldGuidesLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.fieldGuideAssignmentFailed'),
                 );
             });
     }
@@ -189,6 +208,14 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         today.setHours(0, 0, 0, 0);
 
         return new Date(departureDate) < today;
+    }
+
+    function isFieldGuideDateConflicted(fieldGuideId, departureDate, excludeGroupId) {
+        return expeditionGroups.value.some((expeditionGroup) => (
+            expeditionGroup.id !== excludeGroupId
+            && expeditionGroup.fieldGuideId === fieldGuideId
+            && expeditionGroup.departureDate === departureDate
+        ));
     }
 
     /**
@@ -343,6 +370,63 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     /**
+     * @param {number} expeditionGroupId
+     * @param {number} fieldGuideId
+     * @param {boolean} [confirmConflict=false]
+     * @returns {Promise<ExpeditionGroup|{conflict: true}|null>}
+     */
+    function assignFieldGuide(expeditionGroupId, fieldGuideId, confirmConflict = false) {
+        const groupIndex = expeditionGroups.value.findIndex(
+            (expeditionGroup) => expeditionGroup.id === expeditionGroupId,
+        );
+
+        if (groupIndex === -1) {
+            errors.value.push(
+                createApplicationError('errors.fieldGuideAssignmentFailed'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        const currentGroup = expeditionGroups.value[groupIndex];
+
+        if (
+            !confirmConflict
+            && isFieldGuideDateConflicted(
+                fieldGuideId,
+                currentGroup.departureDate,
+                currentGroup.id,
+            )
+        ) {
+            return Promise.resolve({ conflict: true });
+        }
+
+        const groupToUpdate = new ExpeditionGroup({
+            ...currentGroup,
+            fieldGuideId,
+        });
+
+        return expeditionSetupApi.updateExpeditionGroup(
+            groupToUpdate.id,
+            groupToUpdate,
+        )
+            .then((response) => {
+                const updatedGroup = ExpeditionGroupAssembler
+                    .toEntityFromResource(response.data);
+
+                expeditionGroups.value[groupIndex] = updatedGroup;
+                return updatedGroup;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.fieldGuideAssignmentFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
      * @param {number} routeId
      * @returns {Promise<Route|null>}
      */
@@ -396,16 +480,19 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         checkpoints,
         expectedTimeWindows,
         expeditionGroups,
+        fieldGuides,
         errors,
         routesLoaded,
         checkpointsLoaded,
         expectedTimeWindowsLoaded,
         expeditionGroupsLoaded,
+        fieldGuidesLoaded,
         routesCount,
         fetchRoutes,
         fetchCheckpoints,
         fetchExpectedTimeWindows,
         fetchExpeditionGroups,
+        fetchFieldGuides,
         getCheckpointsByRouteId,
         getExpectedTimeWindowsByRouteId,
         getExpeditionGroupsByRouteId,
@@ -416,6 +503,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         addCheckpoint,
         addExpectedTimeWindow,
         addExpeditionGroup,
+        assignFieldGuide,
         enableRoute,
         clearErrors,
     };
