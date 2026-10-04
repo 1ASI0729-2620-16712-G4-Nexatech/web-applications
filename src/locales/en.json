@@ -23,7 +23,8 @@
     "resetFilters": "Reset filters",
     "loading": "Loading routes...",
     "configureCheckpoints": "Configure checkpoints",
-    "configureTimeWindows": "Configure time windows"
+    "configureTimeWindows": "Configure time windows",
+    "manageGroups": "Manage groups"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -84,7 +85,10 @@
     "checkpointLocationRequired": "Checkpoint location is required.",
     "checkpointOrderInvalid": "Sequence order must be greater than zero.",
     "minimumTimeInvalid": "Minimum expected time must be zero or greater.",
-    "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time."
+    "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time.",
+    "expeditionGroupNameRequired": "Group name is required.",
+    "expeditionGroupDepartureDateRequired": "Departure date is required.",
+    "expeditionGroupCapacityInvalid": "Maximum capacity must be greater than zero."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
@@ -95,7 +99,10 @@
     "routeEnableFailed": "The route could not be enabled.",
     "expectedTimeWindowCreationFailed": "The expected time window could not be created.",
     "expectedTimeWindowLimitsInvalid": "Maximum expected time must be greater than minimum expected time.",
-    "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window."
+    "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window.",
+    "expeditionGroupCreationFailed": "The expedition group could not be created.",
+    "routeNotEnabledForGroups": "The route must be enabled before creating expedition groups.",
+    "expeditionGroupDepartureDateInPast": "Departure date cannot be earlier than today."
   },
 
   "checkpoints": {
@@ -128,5 +135,18 @@
     "noSegmentsDescription": "Add at least two checkpoints to define route segments.",
     "allConfigured": "All route segments are configured.",
     "pendingCount": "{count} pending segments"
+  },
+  "expeditionGroups": {
+    "title": "Expedition groups",
+    "description": "Create expedition groups for this route's upcoming departures.",
+    "name": "Group name",
+    "namePlaceholder": "e.g. Huayhuash October Group",
+    "departureDate": "Departure date",
+    "maximumCapacity": "Maximum capacity",
+    "addGroup": "Create group",
+    "registeredCount": "{count} registered groups",
+    "noGroups": "No expedition groups configured",
+    "noGroupsDescription": "Create the first expedition group for this route's departure.",
+    "routeNotEnabled": "This route must be enabled before creating expedition groups."
   }
 }
