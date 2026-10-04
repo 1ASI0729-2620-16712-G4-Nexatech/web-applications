@@ -26,6 +26,12 @@ const fieldErrors = reactive({
 
 const submissionErrorKey = ref('');
 
+const guideAssignmentGroupId = ref(null);
+const guideAssignmentFieldGuideId = ref(null);
+const guideAssignmentFieldError = ref('');
+const guideAssignmentSubmissionError = ref('');
+const guideAssignmentConflict = ref(false);
+
 const selectedRoute = computed(() => (
     store.routes.find((currentRoute) => currentRoute.id === routeId)
 ));
@@ -39,7 +45,9 @@ const isRouteEnabled = computed(() => (
 ));
 
 const isLoading = computed(() => (
-    !store.routesLoaded || !store.expeditionGroupsLoaded
+    !store.routesLoaded
+    || !store.expeditionGroupsLoaded
+    || !store.fieldGuidesLoaded
 ));
 
 function validateForm() {
@@ -104,10 +112,59 @@ function goBackToRoutes() {
   router.push({ name: 'routes' });
 }
 
+function getFieldGuideName(fieldGuideId) {
+  return store.fieldGuides.find((fieldGuide) => (
+      fieldGuide.id === fieldGuideId
+  ))?.name ?? '';
+}
+
+function openGuideAssignment(expeditionGroup) {
+  guideAssignmentGroupId.value = expeditionGroup.id;
+  guideAssignmentFieldGuideId.value = expeditionGroup.fieldGuideId;
+  guideAssignmentFieldError.value = '';
+  guideAssignmentSubmissionError.value = '';
+  guideAssignmentConflict.value = false;
+}
+
+function closeGuideAssignment() {
+  guideAssignmentGroupId.value = null;
+}
+
+function submitGuideAssignment(confirmConflict = false) {
+  guideAssignmentFieldError.value = '';
+  guideAssignmentSubmissionError.value = '';
+  store.clearErrors();
+
+  if (!guideAssignmentFieldGuideId.value) {
+    guideAssignmentFieldError.value = 'validation.fieldGuideRequired';
+    return;
+  }
+
+  store.assignFieldGuide(
+      guideAssignmentGroupId.value,
+      guideAssignmentFieldGuideId.value,
+      confirmConflict,
+  ).then((result) => {
+    if (result?.conflict) {
+      guideAssignmentConflict.value = true;
+      return;
+    }
+
+    if (!result) {
+      guideAssignmentSubmissionError.value = store.errors.at(-1)?.code
+          ?? 'errors.fieldGuideAssignmentFailed';
+      return;
+    }
+
+    closeGuideAssignment();
+  });
+}
+
 onMounted(() => {
   Promise.all([
     store.fetchRoutes(),
     store.fetchExpeditionGroups(),
+    store.fetchFieldGuides(),
   ]).then(() => {
     if (!selectedRoute.value) {
       goBackToRoutes();
@@ -272,13 +329,94 @@ onMounted(() => {
                 :key="expeditionGroup.id"
                 class="expedition-group-item"
             >
-              <div>
-                <strong>{{ expeditionGroup.name }}</strong>
-                <p>
-                  {{ expeditionGroup.departureDate }}
-                  ·
-                  {{ expeditionGroup.maximumCapacity }}
+              <div class="expedition-group-item-row">
+                <div>
+                  <strong>{{ expeditionGroup.name }}</strong>
+                  <p>
+                    {{ expeditionGroup.departureDate }}
+                    ·
+                    {{ expeditionGroup.maximumCapacity }}
+                  </p>
+                </div>
+
+                <div class="field-guide-status">
+                  <span v-if="expeditionGroup.fieldGuideId" class="field-guide-assigned">
+                    <i class="pi pi-user" />
+                    {{ getFieldGuideName(expeditionGroup.fieldGuideId) }}
+                  </span>
+
+                  <span v-else class="field-guide-missing">
+                    <i class="pi pi-exclamation-circle" />
+                    {{ t('expeditionGroups.noFieldGuideAssigned') }}
+                  </span>
+
+                  <pv-button
+                      :label="t('expeditionGroups.assignFieldGuide')"
+                      size="small"
+                      outlined
+                      @click="openGuideAssignment(expeditionGroup)"
+                  />
+                </div>
+              </div>
+
+              <div
+                  v-if="guideAssignmentGroupId === expeditionGroup.id"
+                  class="guide-assignment-panel"
+              >
+                <div class="form-field">
+                  <label :for="`field-guide-${expeditionGroup.id}`">
+                    {{ t('expeditionGroups.fieldGuide') }}
+                  </label>
+
+                  <pv-select
+                      :id="`field-guide-${expeditionGroup.id}`"
+                      v-model="guideAssignmentFieldGuideId"
+                      :options="store.fieldGuides"
+                      option-label="name"
+                      option-value="id"
+                      :placeholder="t('expeditionGroups.fieldGuidePlaceholder')"
+                      :invalid="Boolean(guideAssignmentFieldError)"
+                      fluid
+                  />
+
+                  <small v-if="guideAssignmentFieldError" class="field-error">
+                    {{ t(guideAssignmentFieldError) }}
+                  </small>
+                </div>
+
+                <p v-if="guideAssignmentConflict" class="field-guide-conflict-warning">
+                  {{ t('expeditionGroups.fieldGuideDateConflictWarning') }}
                 </p>
+
+                <p v-if="guideAssignmentSubmissionError" class="request-error">
+                  {{ t(guideAssignmentSubmissionError) }}
+                </p>
+
+                <div class="guide-assignment-actions">
+                  <pv-button
+                      type="button"
+                      :label="t('common.cancel')"
+                      severity="secondary"
+                      outlined
+                      @click="closeGuideAssignment"
+                  />
+
+                  <pv-button
+                      v-if="guideAssignmentConflict"
+                      type="button"
+                      :label="t('expeditionGroups.confirmAssignAnyway')"
+                      severity="warn"
+                      @click="submitGuideAssignment(true)"
+                  />
+
+                  <pv-button
+                      v-else
+                      type="button"
+                      :label="t('expeditionGroups.assignFieldGuide')"
+                      icon="pi pi-save"
+                      @click="submitGuideAssignment(false)"
+                  />
+                </div>
               </div>
             </article>
           </div>
@@ -464,8 +602,7 @@ h3 {
 }
 
 .expedition-group-item {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 0.9rem;
   padding: 1rem 0;
   border-bottom: 1px solid var(--vt-border);
@@ -482,6 +619,56 @@ h3 {
 .expedition-group-item p {
   margin: 0.25rem 0 0;
   font-size: 0.82rem;
+}
+
+.expedition-group-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.field-guide-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.field-guide-assigned {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #157347;
+}
+
+.field-guide-missing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #9b5b00;
+}
+
+.guide-assignment-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--vt-border);
+  border-radius: 0.75rem;
+  background: var(--vt-surface-soft);
+}
+
+.field-guide-conflict-warning {
+  color: #9b5b00;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.guide-assignment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .empty-state {
