@@ -89,6 +89,14 @@
       "departureDate": "2026-10-05",
       "maximumCapacity": 12,
       "fieldGuideId": 3
+    },
+    {
+      "id": 4,
+      "routeId": 1,
+      "name": "akipus",
+      "departureDate": "2026-10-06",
+      "maximumCapacity": 3,
+      "fieldGuideId": null
     }
   ],
   "field-guides": [
@@ -103,6 +111,26 @@
     {
       "id": 3,
       "name": "Carlos Quispe"
+    }
+  ],
+  "manifest-entries": [
+    {
+      "id": 1,
+      "expeditionGroupId": 1,
+      "fullName": "Miler Rodriguez",
+      "identityDocument": "75920355"
+    },
+    {
+      "id": 2,
+      "expeditionGroupId": 3,
+      "fullName": "Miler Rodriguez",
+      "identityDocument": "75920355"
+    },
+    {
+      "id": 3,
+      "expeditionGroupId": 4,
+      "fullName": "Mateo Leon",
+      "identityDocument": "12345678"
     }
   ]
 }
