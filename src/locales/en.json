@@ -21,7 +21,8 @@
     "saveRoute": "Save route",
     "backToRoutes": "Back to routes",
     "resetFilters": "Reset filters",
-    "loading": "Loading routes..."
+    "loading": "Loading routes...",
+    "configureCheckpoints": "Configure checkpoints"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -43,7 +44,8 @@
     "noRoutesFound": "No routes found",
     "noRoutesDescription": "Change the filters or register a new route.",
     "status": {
-      "draft": "Draft — Pending checkpoints"
+      "draft": "Draft — Pending checkpoints",
+      "enabled": "Enabled"
     },
     "difficulty": {
       "Beginner": "Beginner",
@@ -77,10 +79,34 @@
     "distanceInvalid": "Distance must be greater than zero.",
     "elevationInvalid": "Elevation gain must be zero or greater.",
     "difficultyRequired": "Difficulty is required.",
-    "durationInvalid": "Estimated duration must be greater than zero."
+    "durationInvalid": "Estimated duration must be greater than zero.",
+    "checkpointLocationRequired": "Checkpoint location is required.",
+    "checkpointOrderInvalid": "Sequence order must be greater than zero."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
-    "routeNameDuplicated": "A route with this name already exists."
+    "routeNameDuplicated": "A route with this name already exists.",
+    "checkpointCreationFailed": "The checkpoint could not be created.",
+    "checkpointSequenceDuplicated": "A checkpoint already exists at this position.",
+    "routeRequiresCheckpoint": "Add at least one checkpoint before enabling the route.",
+    "routeEnableFailed": "The route could not be enabled."
+  },
+
+  "checkpoints": {
+    "title": "Checkpoints",
+    "description": "Define the ordered control points for this route.",
+    "route": "Route",
+    "location": "Checkpoint location",
+    "locationPlaceholder": "e.g. Laguna Mituco",
+    "sequenceOrder": "Sequence order",
+    "addCheckpoint": "Add checkpoint",
+    "registeredCount": "{count} registered checkpoints",
+    "noCheckpoints": "No checkpoints configured",
+    "noCheckpointsDescription": "Add the first checkpoint to prepare this route for tour planning.",
+    "sequence": "Position {order}",
+    "routePending": "This route requires at least one checkpoint before it can be enabled.",
+    "enableRoute": "Enable route",
+    "routeReady": "Checkpoint requirement complete. You can enable this route.",
+    "routeEnabled": "Route enabled for tour planning."
   }
 }

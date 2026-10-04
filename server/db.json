@@ -9,7 +9,33 @@
       "elevationGainMeters": 5240,
       "difficulty": "Advanced",
       "estimatedDurationMinutes": 5760,
-      "status": "draft"
+      "status": "enabled"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": 1,
+      "routeId": 1,
+      "location": "Llamac",
+      "sequenceOrder": 1
+    },
+    {
+      "id": 2,
+      "routeId": 1,
+      "location": "Laguna Mituco",
+      "sequenceOrder": 2
+    },
+    {
+      "id": 3,
+      "routeId": 1,
+      "location": "Paso Cacananpunta",
+      "sequenceOrder": 3
+    },
+    {
+      "id": 4,
+      "routeId": 1,
+      "location": "Llamac",
+      "sequenceOrder": 4
     }
   ]
 }

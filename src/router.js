@@ -8,6 +8,10 @@ const routeFormView = () => import(
     './expedition-setup/presentation/views/RouteFormView.vue'
     );
 
+const checkpointConfigurationView = () => import(
+    './expedition-setup/presentation/views/CheckpointConfigurationView.vue'
+    );
+
 const routes = [
     {
         path: '/',
@@ -24,6 +28,13 @@ const routes = [
         name: 'route-new',
         component: routeFormView,
         meta: { title: 'New Route' },
+    },
+
+    {
+        path: '/operations/routes/:routeId/checkpoints',
+        name: 'route-checkpoints',
+        component: checkpointConfigurationView,
+        meta: { title: 'Checkpoints' },
     },
 ];
 
