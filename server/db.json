@@ -10,6 +10,17 @@
       "difficulty": "Advanced",
       "estimatedDurationMinutes": 5760,
       "status": "enabled"
+    },
+    {
+      "id": 2,
+      "name": "Churin trekking",
+      "origin": "Entrance to Churín",
+      "destination": "Churin Mountain",
+      "distanceKm": 10,
+      "elevationGainMeters": 30,
+      "difficulty": "Intermediate",
+      "estimatedDurationMinutes": 360,
+      "status": "enabled"
     }
   ],
   "checkpoints": [
@@ -36,6 +47,12 @@
       "routeId": 1,
       "location": "Llamac",
       "sequenceOrder": 4
+    },
+    {
+      "id": 5,
+      "routeId": 2,
+      "location": "Pikitos restaurant",
+      "sequenceOrder": 1
     }
   ],
   "expected-time-windows": [
@@ -46,6 +63,22 @@
       "toCheckpointId": 2,
       "minimumMinutes": 60,
       "maximumMinutes": 120
+    }
+  ],
+  "expedition-groups": [
+    {
+      "id": 1,
+      "routeId": 1,
+      "name": "los wawitas",
+      "departureDate": "2026-10-05",
+      "maximumCapacity": 15
+    },
+    {
+      "id": 2,
+      "routeId": 2,
+      "name": "los dibujitos",
+      "departureDate": "2026-10-06",
+      "maximumCapacity": 20
     }
   ]
 }
