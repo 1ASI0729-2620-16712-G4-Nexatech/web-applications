@@ -25,7 +25,8 @@
     "configureCheckpoints": "Configure checkpoints",
     "configureTimeWindows": "Configure time windows",
     "manageGroups": "Manage groups",
-    "backToGroups": "Back to groups"
+    "backToGroups": "Back to groups",
+    "progress": "Progress"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -111,7 +112,8 @@
     "manifestEntryCreationFailed": "The participant could not be registered.",
     "manifestEntryDocumentDuplicated": "A participant with this identity document is already registered in this group.",
     "manifestEntryDateConflict": "This identity document is already registered in another group departing on the same date.",
-    "manifestEntryCapacityExceeded": "This group has reached its maximum capacity."
+    "manifestEntryCapacityExceeded": "This group has reached its maximum capacity.",
+    "groupProgressFetchFailed": "Progress data could not be loaded."
   },
 
   "checkpoints": {
@@ -177,5 +179,25 @@
     "noEntries": "No participants registered",
     "noEntriesDescription": "Register the first participant for this expedition group.",
     "capacityReached": "This group has reached its maximum capacity."
+  },
+  "groupProgress": {
+    "title": "Group progress tracking",
+    "description": "Monitor the estimated progress of active expedition groups.",
+    "lastConfirmedCheckpoint": "Last confirmed checkpoint",
+    "currentSegment": "Current segment",
+    "estimatedProgress": "Estimated progress",
+    "synchronizedAt": "Last synchronized",
+    "status": {
+      "on-track": "On track",
+      "delayed": "Delayed"
+    },
+    "risk": {
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk"
+    },
+    "staleWarning": "No recent synchronization. Progress shown is an estimate.",
+    "tourNotActive": "Tracking is enabled once this group starts its tour.",
+    "noGroups": "No expedition groups found"
   }
 }
