@@ -7,6 +7,7 @@ import {
 } from '../domain/model/expected-time-window.entity.js';
 import { ExpeditionGroup } from '../domain/model/expedition-group.entity.js';
 import { FieldGuide } from '../domain/model/field-guide.entity.js';
+import { ManifestEntry } from '../domain/model/manifest-entry.entity.js';
 import { RouteAssembler } from '../infrastructure/route.assembler.js';
 import { CheckpointAssembler } from '../infrastructure/checkpoint.assembler.js';
 import {
@@ -18,6 +19,9 @@ import {
 import {
     FieldGuideAssembler,
 } from '../infrastructure/field-guide.assembler.js';
+import {
+    ManifestEntryAssembler,
+} from '../infrastructure/manifest-entry.assembler.js';
 import { ExpeditionSetupApi } from '../infrastructure/expedition-setup-api.js';
 
 const expeditionSetupApi = new ExpeditionSetupApi();
@@ -34,12 +38,14 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     const expectedTimeWindows = ref([]);
     const expeditionGroups = ref([]);
     const fieldGuides = ref([]);
+    const manifestEntries = ref([]);
     const errors = ref([]);
     const routesLoaded = ref(false);
     const checkpointsLoaded = ref(false);
     const expectedTimeWindowsLoaded = ref(false);
     const expeditionGroupsLoaded = ref(false);
     const fieldGuidesLoaded = ref(false);
+    const manifestEntriesLoaded = ref(false);
 
     const routesCount = computed(() => (
         routesLoaded.value ? routes.value.length : 0
@@ -110,6 +116,21 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             .catch(() => {
                 errors.value.push(
                     createApplicationError('errors.fieldGuideAssignmentFailed'),
+                );
+            });
+    }
+
+    function fetchManifestEntries() {
+        return expeditionSetupApi.getManifestEntries()
+            .then((response) => {
+                manifestEntries.value = ManifestEntryAssembler
+                    .toEntitiesFromResponse(response);
+
+                manifestEntriesLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.manifestEntryCreationFailed'),
                 );
             });
     }
@@ -216,6 +237,63 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             && expeditionGroup.fieldGuideId === fieldGuideId
             && expeditionGroup.departureDate === departureDate
         ));
+    }
+
+    function getManifestEntriesByGroupId(expeditionGroupId) {
+        return manifestEntries.value.filter((manifestEntry) => (
+            manifestEntry.expeditionGroupId === expeditionGroupId
+        ));
+    }
+
+    function isIdentityDocumentDuplicated(expeditionGroupId, identityDocument) {
+        const normalizedDocument = identityDocument.trim().toLocaleLowerCase();
+
+        return getManifestEntriesByGroupId(expeditionGroupId).some(
+            (manifestEntry) => (
+                manifestEntry.identityDocument.trim().toLocaleLowerCase()
+                === normalizedDocument
+            ),
+        );
+    }
+
+    function isIdentityDocumentRegisteredOnDate(
+        identityDocument,
+        departureDate,
+        excludeGroupId,
+    ) {
+        const normalizedDocument = identityDocument.trim().toLocaleLowerCase();
+
+        return manifestEntries.value.some((manifestEntry) => {
+            if (manifestEntry.expeditionGroupId === excludeGroupId) {
+                return false;
+            }
+
+            if (
+                manifestEntry.identityDocument.trim().toLocaleLowerCase()
+                !== normalizedDocument
+            ) {
+                return false;
+            }
+
+            const otherGroup = expeditionGroups.value.find(
+                (currentGroup) => currentGroup.id === manifestEntry.expeditionGroupId,
+            );
+
+            return otherGroup?.departureDate === departureDate;
+        });
+    }
+
+    function isGroupAtMaximumCapacity(expeditionGroupId) {
+        const expeditionGroup = expeditionGroups.value.find(
+            (currentGroup) => currentGroup.id === expeditionGroupId,
+        );
+
+        if (!expeditionGroup) {
+            return false;
+        }
+
+        return getManifestEntriesByGroupId(expeditionGroupId).length
+            >= expeditionGroup.maximumCapacity;
     }
 
     /**
@@ -427,6 +505,68 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     /**
+     * @param {ManifestEntry} manifestEntry
+     * @returns {Promise<ManifestEntry|null>}
+     */
+    function addManifestEntry(manifestEntry) {
+        if (
+            isIdentityDocumentDuplicated(
+                manifestEntry.expeditionGroupId,
+                manifestEntry.identityDocument,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryDocumentDuplicated'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        const currentGroup = expeditionGroups.value.find(
+            (group) => group.id === manifestEntry.expeditionGroupId,
+        );
+
+        if (
+            currentGroup
+            && isIdentityDocumentRegisteredOnDate(
+                manifestEntry.identityDocument,
+                currentGroup.departureDate,
+                manifestEntry.expeditionGroupId,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryDateConflict'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        if (isGroupAtMaximumCapacity(manifestEntry.expeditionGroupId)) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryCapacityExceeded'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        return expeditionSetupApi.createManifestEntry(manifestEntry)
+            .then((response) => {
+                const newManifestEntry = ManifestEntryAssembler
+                    .toEntityFromResource(response.data);
+
+                manifestEntries.value.push(newManifestEntry);
+                return newManifestEntry;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.manifestEntryCreationFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
      * @param {number} routeId
      * @returns {Promise<Route|null>}
      */
@@ -481,29 +621,35 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         expectedTimeWindows,
         expeditionGroups,
         fieldGuides,
+        manifestEntries,
         errors,
         routesLoaded,
         checkpointsLoaded,
         expectedTimeWindowsLoaded,
         expeditionGroupsLoaded,
         fieldGuidesLoaded,
+        manifestEntriesLoaded,
         routesCount,
         fetchRoutes,
         fetchCheckpoints,
         fetchExpectedTimeWindows,
         fetchExpeditionGroups,
         fetchFieldGuides,
+        fetchManifestEntries,
         getCheckpointsByRouteId,
         getExpectedTimeWindowsByRouteId,
         getExpeditionGroupsByRouteId,
+        getManifestEntriesByGroupId,
         getRouteSegments,
         getPendingSegmentsByRouteId,
         routeHasCheckpoints,
+        isGroupAtMaximumCapacity,
         addRoute,
         addCheckpoint,
         addExpectedTimeWindow,
         addExpeditionGroup,
         assignFieldGuide,
+        addManifestEntry,
         enableRoute,
         clearErrors,
     };
