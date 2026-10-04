@@ -88,7 +88,8 @@
     "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
     "expeditionGroupNameRequired": "El nombre del grupo es obligatorio.",
     "expeditionGroupDepartureDateRequired": "La fecha de salida es obligatoria.",
-    "expeditionGroupCapacityInvalid": "La capacidad máxima debe ser mayor que cero."
+    "expeditionGroupCapacityInvalid": "La capacidad máxima debe ser mayor que cero.",
+    "fieldGuideRequired": "Selecciona un guía de campo antes de asignar."
   },
   "errors": {
     "routeCreationFailed": "No se pudo crear la ruta.",
@@ -102,7 +103,8 @@
     "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada.",
     "expeditionGroupCreationFailed": "No se pudo crear el grupo de expedición.",
     "routeNotEnabledForGroups": "La ruta debe estar habilitada antes de crear grupos de expedición.",
-    "expeditionGroupDepartureDateInPast": "La fecha de salida no puede ser anterior a hoy."
+    "expeditionGroupDepartureDateInPast": "La fecha de salida no puede ser anterior a hoy.",
+    "fieldGuideAssignmentFailed": "No se pudo asignar el guía de campo."
   },
 
   "checkpoints": {
@@ -147,6 +149,12 @@
     "registeredCount": "{count} grupos registrados",
     "noGroups": "No hay grupos de expedición configurados",
     "noGroupsDescription": "Crea el primer grupo de expedición para la salida de esta ruta.",
-    "routeNotEnabled": "Esta ruta debe estar habilitada antes de crear grupos de expedición."
+    "routeNotEnabled": "Esta ruta debe estar habilitada antes de crear grupos de expedición.",
+    "fieldGuide": "Guía de campo",
+    "fieldGuidePlaceholder": "Selecciona un guía de campo",
+    "noFieldGuideAssigned": "Sin guía asignado",
+    "assignFieldGuide": "Asignar guía",
+    "fieldGuideDateConflictWarning": "Este guía ya tiene otro grupo con salida en la misma fecha.",
+    "confirmAssignAnyway": "Asignar de todas formas"
   }
 }

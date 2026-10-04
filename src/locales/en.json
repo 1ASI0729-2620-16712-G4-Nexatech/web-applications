@@ -88,7 +88,8 @@
     "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time.",
     "expeditionGroupNameRequired": "Group name is required.",
     "expeditionGroupDepartureDateRequired": "Departure date is required.",
-    "expeditionGroupCapacityInvalid": "Maximum capacity must be greater than zero."
+    "expeditionGroupCapacityInvalid": "Maximum capacity must be greater than zero.",
+    "fieldGuideRequired": "Select a field guide before assigning."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
@@ -102,7 +103,8 @@
     "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window.",
     "expeditionGroupCreationFailed": "The expedition group could not be created.",
     "routeNotEnabledForGroups": "The route must be enabled before creating expedition groups.",
-    "expeditionGroupDepartureDateInPast": "Departure date cannot be earlier than today."
+    "expeditionGroupDepartureDateInPast": "Departure date cannot be earlier than today.",
+    "fieldGuideAssignmentFailed": "The field guide could not be assigned."
   },
 
   "checkpoints": {
@@ -147,6 +149,12 @@
     "registeredCount": "{count} registered groups",
     "noGroups": "No expedition groups configured",
     "noGroupsDescription": "Create the first expedition group for this route's departure.",
-    "routeNotEnabled": "This route must be enabled before creating expedition groups."
+    "routeNotEnabled": "This route must be enabled before creating expedition groups.",
+    "fieldGuide": "Field guide",
+    "fieldGuidePlaceholder": "Select a field guide",
+    "noFieldGuideAssigned": "No field guide assigned",
+    "assignFieldGuide": "Assign field guide",
+    "fieldGuideDateConflictWarning": "This field guide already has another group departing on the same date.",
+    "confirmAssignAnyway": "Assign anyway"
   }
 }
