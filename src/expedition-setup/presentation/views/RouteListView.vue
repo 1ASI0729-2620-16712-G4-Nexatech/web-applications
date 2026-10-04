@@ -92,6 +92,13 @@ function goToCheckpoints(routeId) {
     params: { routeId },
   });
 }
+
+function goToGroups(routeId) {
+  router.push({
+    name: 'route-groups',
+    params: { routeId },
+  });
+}
 </script>
 
 <template>
@@ -241,13 +248,24 @@ function goToCheckpoints(routeId) {
           </span>
         </div>
 
-        <pv-button
-            :label="t('common.configureCheckpoints')"
-            icon="pi pi-map-marker"
-            severity="secondary"
-            outlined
-            @click="goToCheckpoints(route.id)"
-        />
+        <div class="route-card-actions">
+          <pv-button
+              :label="t('common.configureCheckpoints')"
+              icon="pi pi-map-marker"
+              severity="secondary"
+              outlined
+              @click="goToCheckpoints(route.id)"
+          />
+
+          <pv-button
+              v-if="route.status === 'enabled'"
+              :label="t('common.manageGroups')"
+              icon="pi pi-users"
+              severity="secondary"
+              outlined
+              @click="goToGroups(route.id)"
+          />
+        </div>
       </article>
     </div>
 
@@ -488,6 +506,12 @@ h1 {
 
 .route-card-footer i {
   color: var(--vt-amber);
+}
+
+.route-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .loading-state,
