@@ -9,6 +9,7 @@ export class ExpeditionGroup {
      * @param {string} [params.name=''] - Expedition group name.
      * @param {string} [params.departureDate=''] - Scheduled departure date (ISO date string).
      * @param {?number} [params.maximumCapacity=null] - Maximum number of tourists allowed in the group.
+     * @param {?number} [params.fieldGuideId=null] - Assigned field guide identifier.
      */
     constructor({
                     id = null,
@@ -16,11 +17,13 @@ export class ExpeditionGroup {
                     name = '',
                     departureDate = '',
                     maximumCapacity = null,
+                    fieldGuideId = null,
                 } = {}) {
         this.id = id;
         this.routeId = routeId;
         this.name = name;
         this.departureDate = departureDate;
         this.maximumCapacity = maximumCapacity;
+        this.fieldGuideId = fieldGuideId;
     }
 }
