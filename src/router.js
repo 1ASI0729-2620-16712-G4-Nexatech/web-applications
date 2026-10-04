@@ -11,7 +11,9 @@ const routeFormView = () => import(
 const checkpointConfigurationView = () => import(
     './expedition-setup/presentation/views/CheckpointConfigurationView.vue'
     );
-
+const expectedTimeWindowConfigurationView = () => import(
+    './expedition-setup/presentation/views/ExpectedTimeWindowConfigurationView.vue'
+    );
 const routes = [
     {
         path: '/',
@@ -35,6 +37,12 @@ const routes = [
         name: 'route-checkpoints',
         component: checkpointConfigurationView,
         meta: { title: 'Checkpoints' },
+    },
+    {
+        path: '/operations/routes/:routeId/expected-time-windows',
+        name: 'route-expected-time-windows',
+        component: expectedTimeWindowConfigurationView,
+        meta: { title: 'Expected Time Windows' },
     },
 ];
 

@@ -37,5 +37,15 @@
       "location": "Llamac",
       "sequenceOrder": 4
     }
+  ],
+  "expected-time-windows": [
+    {
+      "id": 1,
+      "routeId": 1,
+      "fromCheckpointId": 1,
+      "toCheckpointId": 2,
+      "minimumMinutes": 60,
+      "maximumMinutes": 120
+    }
   ]
 }

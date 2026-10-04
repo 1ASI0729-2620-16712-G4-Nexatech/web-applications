@@ -3,20 +3,28 @@ import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
 const routesEndpointPath = import.meta.env.VITE_ROUTES_ENDPOINT_PATH;
 const checkpointsEndpointPath = import.meta.env.VITE_CHECKPOINTS_ENDPOINT_PATH;
+const expectedTimeWindowsEndpointPath = import.meta.env
+    .VITE_EXPECTED_TIME_WINDOWS_ENDPOINT_PATH;
+
 /**
  * API gateway for the Expedition Setup bounded context.
  */
-
 export class ExpeditionSetupApi extends BaseApi {
     #routesEndpoint;
     #checkpointsEndpoint;
+    #expectedTimeWindowsEndpoint;
 
     constructor() {
         super();
+
         this.#routesEndpoint = new BaseEndpoint(this, routesEndpointPath);
         this.#checkpointsEndpoint = new BaseEndpoint(
             this,
             checkpointsEndpointPath,
+        );
+        this.#expectedTimeWindowsEndpoint = new BaseEndpoint(
+            this,
+            expectedTimeWindowsEndpointPath,
         );
     }
 
@@ -38,5 +46,15 @@ export class ExpeditionSetupApi extends BaseApi {
 
     createCheckpoint(checkpoint) {
         return this.#checkpointsEndpoint.create(checkpoint);
+    }
+
+    getExpectedTimeWindows() {
+        return this.#expectedTimeWindowsEndpoint.getAll();
+    }
+
+    createExpectedTimeWindow(expectedTimeWindow) {
+        return this.#expectedTimeWindowsEndpoint.create(
+            expectedTimeWindow,
+        );
     }
 }

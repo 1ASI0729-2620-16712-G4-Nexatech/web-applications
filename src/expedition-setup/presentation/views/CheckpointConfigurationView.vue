@@ -107,6 +107,12 @@ function enableCurrentRoute() {
 function goBackToRoutes() {
   router.push({ name: 'routes' });
 }
+function goToExpectedTimeWindows() {
+  router.push({
+    name: 'route-expected-time-windows',
+    params: { routeId },
+  });
+}
 
 onMounted(() => {
   Promise.all([
@@ -159,6 +165,15 @@ onMounted(() => {
         </div>
 
         <div class="route-actions">
+          <pv-button
+              type="button"
+              :label="t('common.configureTimeWindows')"
+              icon="pi pi-clock"
+              severity="secondary"
+              outlined
+              @click="goToExpectedTimeWindows"
+          />
+
   <span
       class="route-state"
       :class="{ ready: hasCheckpoints }"

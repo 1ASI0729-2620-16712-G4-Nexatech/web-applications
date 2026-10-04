@@ -22,7 +22,8 @@
     "backToRoutes": "Volver a rutas",
     "resetFilters": "Restablecer filtros",
     "loading": "Cargando rutas...",
-    "configureCheckpoints": "Configurar puntos de control"
+    "configureCheckpoints": "Configurar puntos de control",
+    "configureTimeWindows": "Configurar ventanas de tiempo"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -81,7 +82,9 @@
     "difficultyRequired": "La dificultad es obligatoria.",
     "durationInvalid": "La duración estimada debe ser mayor que cero.",
     "checkpointLocationRequired": "La ubicación del punto de control es obligatoria.",
-    "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero."
+    "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero.",
+    "minimumTimeInvalid": "El tiempo mínimo esperado debe ser cero o mayor.",
+    "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo."
   },
   "errors": {
     "routeCreationFailed": "No se pudo crear la ruta.",
@@ -89,7 +92,10 @@
     "checkpointCreationFailed": "No se pudo crear el punto de control.",
     "checkpointSequenceDuplicated": "Ya existe un punto de control en esta posición.",
     "routeRequiresCheckpoint": "Agrega al menos un punto de control antes de habilitar la ruta.",
-    "routeEnableFailed": "No se pudo habilitar la ruta."
+    "routeEnableFailed": "No se pudo habilitar la ruta.",
+    "expectedTimeWindowCreationFailed": "No se pudo crear la ventana de tiempo esperada.",
+    "expectedTimeWindowLimitsInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
+    "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada."
   },
 
   "checkpoints": {
@@ -108,5 +114,19 @@
     "enableRoute": "Habilitar ruta",
     "routeReady": "El requisito de puntos de control está completo. Puedes habilitar esta ruta.",
     "routeEnabled": "Ruta habilitada para la planificación de tours."
+  },
+  "expectedTimeWindows": {
+    "title": "Ventanas de tiempo esperadas",
+    "description": "Configura el rango de duración esperado para cada tramo entre puntos de control.",
+    "segment": "Tramo",
+    "minimumMinutes": "Tiempo mínimo (minutos)",
+    "maximumMinutes": "Tiempo máximo (minutos)",
+    "save": "Guardar ventana",
+    "configured": "Configurada",
+    "pending": "Pendiente de configuración",
+    "noSegments": "No hay tramos disponibles",
+    "noSegmentsDescription": "Agrega al menos dos puntos de control para definir tramos de ruta.",
+    "allConfigured": "Todos los tramos de la ruta están configurados.",
+    "pendingCount": "{count} tramos pendientes"
   }
 }
