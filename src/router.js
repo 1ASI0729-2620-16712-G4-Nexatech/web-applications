@@ -20,6 +20,9 @@ const expeditionGroupConfigurationView = () => import(
 const touristManifestView = () => import(
     './expedition-setup/presentation/views/TouristManifestView.vue'
     );
+const groupProgressDashboardView = () => import(
+    './field-tracking/presentation/views/GroupProgressDashboardView.vue'
+    );
 const routes = [
     {
         path: '/',
@@ -61,6 +64,12 @@ const routes = [
         name: 'group-manifest',
         component: touristManifestView,
         meta: { title: 'Tourist Manifest' },
+    },
+    {
+        path: '/operations/progress',
+        name: 'group-progress-dashboard',
+        component: groupProgressDashboardView,
+        meta: { title: 'Group Progress' },
     },
 ];
 
