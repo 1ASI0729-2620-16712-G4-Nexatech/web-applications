@@ -85,6 +85,13 @@ function getDifficultyLabel(difficulty) {
 function getDifficultyClass(difficulty) {
   return `difficulty-${difficulty.toLocaleLowerCase()}`;
 }
+
+function goToCheckpoints(routeId) {
+  router.push({
+    name: 'route-checkpoints',
+    params: { routeId },
+  });
+}
 </script>
 
 <template>
@@ -233,6 +240,14 @@ function getDifficultyClass(difficulty) {
             {{ t('routes.addCheckpoints') }}
           </span>
         </div>
+
+        <pv-button
+            :label="t('common.configureCheckpoints')"
+            icon="pi pi-map-marker"
+            severity="secondary"
+            outlined
+            @click="goToCheckpoints(route.id)"
+        />
       </article>
     </div>
 

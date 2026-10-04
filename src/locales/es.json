@@ -21,7 +21,8 @@
     "saveRoute": "Guardar ruta",
     "backToRoutes": "Volver a rutas",
     "resetFilters": "Restablecer filtros",
-    "loading": "Cargando rutas..."
+    "loading": "Cargando rutas...",
+    "configureCheckpoints": "Configurar puntos de control"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -43,7 +44,8 @@
     "noRoutesFound": "No se encontraron rutas",
     "noRoutesDescription": "Cambia los filtros o registra una nueva ruta.",
     "status": {
-      "draft": "Borrador — Pendiente de puntos de control"
+      "draft": "Borrador — Pendiente de puntos de control",
+      "enabled": "Habilitada"
     },
     "difficulty": {
       "Beginner": "Principiante",
@@ -77,10 +79,34 @@
     "distanceInvalid": "La distancia debe ser mayor que cero.",
     "elevationInvalid": "El desnivel acumulado debe ser cero o mayor.",
     "difficultyRequired": "La dificultad es obligatoria.",
-    "durationInvalid": "La duración estimada debe ser mayor que cero."
+    "durationInvalid": "La duración estimada debe ser mayor que cero.",
+    "checkpointLocationRequired": "La ubicación del punto de control es obligatoria.",
+    "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero."
   },
   "errors": {
     "routeCreationFailed": "No se pudo crear la ruta.",
-    "routeNameDuplicated": "Ya existe una ruta con este nombre."
+    "routeNameDuplicated": "Ya existe una ruta con este nombre.",
+    "checkpointCreationFailed": "No se pudo crear el punto de control.",
+    "checkpointSequenceDuplicated": "Ya existe un punto de control en esta posición.",
+    "routeRequiresCheckpoint": "Agrega al menos un punto de control antes de habilitar la ruta.",
+    "routeEnableFailed": "No se pudo habilitar la ruta."
+  },
+
+  "checkpoints": {
+    "title": "Puntos de control",
+    "description": "Define los puntos de control ordenados de esta ruta.",
+    "route": "Ruta",
+    "location": "Ubicación del punto de control",
+    "locationPlaceholder": "ej. Laguna Mituco",
+    "sequenceOrder": "Orden en la secuencia",
+    "addCheckpoint": "Agregar punto de control",
+    "registeredCount": "{count} puntos de control registrados",
+    "noCheckpoints": "No hay puntos de control configurados",
+    "noCheckpointsDescription": "Agrega el primer punto de control para preparar esta ruta para la planificación de tours.",
+    "sequence": "Posición {order}",
+    "routePending": "Esta ruta requiere al menos un punto de control antes de poder habilitarse.",
+    "enableRoute": "Habilitar ruta",
+    "routeReady": "El requisito de puntos de control está completo. Puedes habilitar esta ruta.",
+    "routeEnabled": "Ruta habilitada para la planificación de tours."
   }
 }
