@@ -5,11 +5,15 @@ import { Checkpoint } from '../domain/model/checkpoint.entity.js';
 import {
     ExpectedTimeWindow,
 } from '../domain/model/expected-time-window.entity.js';
+import { ExpeditionGroup } from '../domain/model/expedition-group.entity.js';
 import { RouteAssembler } from '../infrastructure/route.assembler.js';
 import { CheckpointAssembler } from '../infrastructure/checkpoint.assembler.js';
 import {
     ExpectedTimeWindowAssembler,
 } from '../infrastructure/expected-time-window.assembler.js';
+import {
+    ExpeditionGroupAssembler,
+} from '../infrastructure/expedition-group.assembler.js';
 import { ExpeditionSetupApi } from '../infrastructure/expedition-setup-api.js';
 
 const expeditionSetupApi = new ExpeditionSetupApi();
@@ -24,10 +28,12 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     const routes = ref([]);
     const checkpoints = ref([]);
     const expectedTimeWindows = ref([]);
+    const expeditionGroups = ref([]);
     const errors = ref([]);
     const routesLoaded = ref(false);
     const checkpointsLoaded = ref(false);
     const expectedTimeWindowsLoaded = ref(false);
+    const expeditionGroupsLoaded = ref(false);
 
     const routesCount = computed(() => (
         routesLoaded.value ? routes.value.length : 0
@@ -70,6 +76,21 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             .catch(() => {
                 errors.value.push(
                     createApplicationError('errors.expectedTimeWindowCreationFailed'),
+                );
+            });
+    }
+
+    function fetchExpeditionGroups() {
+        return expeditionSetupApi.getExpeditionGroups()
+            .then((response) => {
+                expeditionGroups.value = ExpeditionGroupAssembler
+                    .toEntitiesFromResponse(response);
+
+                expeditionGroupsLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expeditionGroupCreationFailed'),
                 );
             });
     }
@@ -147,6 +168,27 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
 
     function hasValidTimeWindowLimits(minimumMinutes, maximumMinutes) {
         return maximumMinutes > minimumMinutes;
+    }
+
+    function getExpeditionGroupsByRouteId(routeId) {
+        return expeditionGroups.value.filter((expeditionGroup) => (
+            expeditionGroup.routeId === routeId
+        ));
+    }
+
+    function isRouteEnabledById(routeId) {
+        const route = routes.value.find(
+            (currentRoute) => currentRoute.id === routeId,
+        );
+
+        return route?.status === 'enabled';
+    }
+
+    function isDepartureDateInPast(departureDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return new Date(departureDate) < today;
     }
 
     /**
@@ -263,6 +305,44 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     /**
+     * @param {ExpeditionGroup} expeditionGroup
+     * @returns {Promise<ExpeditionGroup|null>}
+     */
+    function addExpeditionGroup(expeditionGroup) {
+        if (!isRouteEnabledById(expeditionGroup.routeId)) {
+            errors.value.push(
+                createApplicationError('errors.routeNotEnabledForGroups'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        if (isDepartureDateInPast(expeditionGroup.departureDate)) {
+            errors.value.push(
+                createApplicationError('errors.expeditionGroupDepartureDateInPast'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        return expeditionSetupApi.createExpeditionGroup(expeditionGroup)
+            .then((response) => {
+                const newExpeditionGroup = ExpeditionGroupAssembler
+                    .toEntityFromResource(response.data);
+
+                expeditionGroups.value.push(newExpeditionGroup);
+                return newExpeditionGroup;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expeditionGroupCreationFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
      * @param {number} routeId
      * @returns {Promise<Route|null>}
      */
@@ -315,22 +395,27 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         routes,
         checkpoints,
         expectedTimeWindows,
+        expeditionGroups,
         errors,
         routesLoaded,
         checkpointsLoaded,
         expectedTimeWindowsLoaded,
+        expeditionGroupsLoaded,
         routesCount,
         fetchRoutes,
         fetchCheckpoints,
         fetchExpectedTimeWindows,
+        fetchExpeditionGroups,
         getCheckpointsByRouteId,
         getExpectedTimeWindowsByRouteId,
+        getExpeditionGroupsByRouteId,
         getRouteSegments,
         getPendingSegmentsByRouteId,
         routeHasCheckpoints,
         addRoute,
         addCheckpoint,
         addExpectedTimeWindow,
+        addExpeditionGroup,
         enableRoute,
         clearErrors,
     };
