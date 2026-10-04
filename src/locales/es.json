@@ -1,0 +1,9 @@
+{
+  "app": {
+    "name": "VitalTrek"
+  },
+  "language": {
+    "english": "Inglés",
+    "spanish": "Español"
+  }
+}
