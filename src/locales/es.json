@@ -23,7 +23,8 @@
     "resetFilters": "Restablecer filtros",
     "loading": "Cargando rutas...",
     "configureCheckpoints": "Configurar puntos de control",
-    "configureTimeWindows": "Configurar ventanas de tiempo"
+    "configureTimeWindows": "Configurar ventanas de tiempo",
+    "manageGroups": "Gestionar grupos"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -84,7 +85,10 @@
     "checkpointLocationRequired": "La ubicación del punto de control es obligatoria.",
     "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero.",
     "minimumTimeInvalid": "El tiempo mínimo esperado debe ser cero o mayor.",
-    "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo."
+    "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
+    "expeditionGroupNameRequired": "El nombre del grupo es obligatorio.",
+    "expeditionGroupDepartureDateRequired": "La fecha de salida es obligatoria.",
+    "expeditionGroupCapacityInvalid": "La capacidad máxima debe ser mayor que cero."
   },
   "errors": {
     "routeCreationFailed": "No se pudo crear la ruta.",
@@ -95,7 +99,10 @@
     "routeEnableFailed": "No se pudo habilitar la ruta.",
     "expectedTimeWindowCreationFailed": "No se pudo crear la ventana de tiempo esperada.",
     "expectedTimeWindowLimitsInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
-    "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada."
+    "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada.",
+    "expeditionGroupCreationFailed": "No se pudo crear el grupo de expedición.",
+    "routeNotEnabledForGroups": "La ruta debe estar habilitada antes de crear grupos de expedición.",
+    "expeditionGroupDepartureDateInPast": "La fecha de salida no puede ser anterior a hoy."
   },
 
   "checkpoints": {
@@ -128,5 +135,18 @@
     "noSegmentsDescription": "Agrega al menos dos puntos de control para definir tramos de ruta.",
     "allConfigured": "Todos los tramos de la ruta están configurados.",
     "pendingCount": "{count} tramos pendientes"
+  },
+  "expeditionGroups": {
+    "title": "Grupos de expedición",
+    "description": "Crea grupos de expedición para las próximas salidas de esta ruta.",
+    "name": "Nombre del grupo",
+    "namePlaceholder": "ej. Grupo Huayhuash Octubre",
+    "departureDate": "Fecha de salida",
+    "maximumCapacity": "Capacidad máxima",
+    "addGroup": "Crear grupo",
+    "registeredCount": "{count} grupos registrados",
+    "noGroups": "No hay grupos de expedición configurados",
+    "noGroupsDescription": "Crea el primer grupo de expedición para la salida de esta ruta.",
+    "routeNotEnabled": "Esta ruta debe estar habilitada antes de crear grupos de expedición."
   }
 }
