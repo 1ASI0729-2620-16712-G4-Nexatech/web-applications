@@ -8,6 +8,8 @@ const expectedTimeWindowsEndpointPath = import.meta.env
 const expeditionGroupsEndpointPath = import.meta.env
     .VITE_EXPEDITION_GROUPS_ENDPOINT_PATH;
 const fieldGuidesEndpointPath = import.meta.env.VITE_FIELD_GUIDES_ENDPOINT_PATH;
+const manifestEntriesEndpointPath = import.meta.env
+    .VITE_MANIFEST_ENTRIES_ENDPOINT_PATH;
 
 /**
  * API gateway for the Expedition Setup bounded context.
@@ -18,6 +20,7 @@ export class ExpeditionSetupApi extends BaseApi {
     #expectedTimeWindowsEndpoint;
     #expeditionGroupsEndpoint;
     #fieldGuidesEndpoint;
+    #manifestEntriesEndpoint;
 
     constructor() {
         super();
@@ -38,6 +41,10 @@ export class ExpeditionSetupApi extends BaseApi {
         this.#fieldGuidesEndpoint = new BaseEndpoint(
             this,
             fieldGuidesEndpointPath,
+        );
+        this.#manifestEntriesEndpoint = new BaseEndpoint(
+            this,
+            manifestEntriesEndpointPath,
         );
     }
 
@@ -88,5 +95,13 @@ export class ExpeditionSetupApi extends BaseApi {
 
     getFieldGuides() {
         return this.#fieldGuidesEndpoint.getAll();
+    }
+
+    getManifestEntries() {
+        return this.#manifestEntriesEndpoint.getAll();
+    }
+
+    createManifestEntry(manifestEntry) {
+        return this.#manifestEntriesEndpoint.create(manifestEntry);
     }
 }
