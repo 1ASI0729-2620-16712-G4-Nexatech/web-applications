@@ -71,14 +71,38 @@
       "routeId": 1,
       "name": "los wawitas",
       "departureDate": "2026-10-05",
-      "maximumCapacity": 15
+      "maximumCapacity": 15,
+      "fieldGuideId": 2
     },
     {
       "id": 2,
       "routeId": 2,
       "name": "los dibujitos",
       "departureDate": "2026-10-06",
-      "maximumCapacity": 20
+      "maximumCapacity": 20,
+      "fieldGuideId": 2
+    },
+    {
+      "id": 3,
+      "routeId": 2,
+      "name": "upas",
+      "departureDate": "2026-10-05",
+      "maximumCapacity": 12,
+      "fieldGuideId": 3
+    }
+  ],
+  "field-guides": [
+    {
+      "id": 1,
+      "name": "Mateo Rios"
+    },
+    {
+      "id": 2,
+      "name": "Lucía Fernández"
+    },
+    {
+      "id": 3,
+      "name": "Carlos Quispe"
     }
   ]
 }
