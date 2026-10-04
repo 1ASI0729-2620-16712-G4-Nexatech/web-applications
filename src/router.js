@@ -17,6 +17,9 @@ const expectedTimeWindowConfigurationView = () => import(
 const expeditionGroupConfigurationView = () => import(
     './expedition-setup/presentation/views/ExpeditionGroupConfigurationView.vue'
     );
+const touristManifestView = () => import(
+    './expedition-setup/presentation/views/TouristManifestView.vue'
+    );
 const routes = [
     {
         path: '/',
@@ -52,6 +55,12 @@ const routes = [
         name: 'route-groups',
         component: expeditionGroupConfigurationView,
         meta: { title: 'Expedition Groups' },
+    },
+    {
+        path: '/operations/routes/:routeId/groups/:groupId/manifest',
+        name: 'group-manifest',
+        component: touristManifestView,
+        meta: { title: 'Tourist Manifest' },
     },
 ];
 
