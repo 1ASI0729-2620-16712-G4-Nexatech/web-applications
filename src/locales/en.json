@@ -22,7 +22,8 @@
     "backToRoutes": "Back to routes",
     "resetFilters": "Reset filters",
     "loading": "Loading routes...",
-    "configureCheckpoints": "Configure checkpoints"
+    "configureCheckpoints": "Configure checkpoints",
+    "configureTimeWindows": "Configure time windows"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -81,7 +82,9 @@
     "difficultyRequired": "Difficulty is required.",
     "durationInvalid": "Estimated duration must be greater than zero.",
     "checkpointLocationRequired": "Checkpoint location is required.",
-    "checkpointOrderInvalid": "Sequence order must be greater than zero."
+    "checkpointOrderInvalid": "Sequence order must be greater than zero.",
+    "minimumTimeInvalid": "Minimum expected time must be zero or greater.",
+    "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
@@ -89,7 +92,10 @@
     "checkpointCreationFailed": "The checkpoint could not be created.",
     "checkpointSequenceDuplicated": "A checkpoint already exists at this position.",
     "routeRequiresCheckpoint": "Add at least one checkpoint before enabling the route.",
-    "routeEnableFailed": "The route could not be enabled."
+    "routeEnableFailed": "The route could not be enabled.",
+    "expectedTimeWindowCreationFailed": "The expected time window could not be created.",
+    "expectedTimeWindowLimitsInvalid": "Maximum expected time must be greater than minimum expected time.",
+    "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window."
   },
 
   "checkpoints": {
@@ -108,5 +114,19 @@
     "enableRoute": "Enable route",
     "routeReady": "Checkpoint requirement complete. You can enable this route.",
     "routeEnabled": "Route enabled for tour planning."
+  },
+  "expectedTimeWindows": {
+    "title": "Expected time windows",
+    "description": "Configure the expected duration range for each checkpoint segment.",
+    "segment": "Segment",
+    "minimumMinutes": "Minimum time (minutes)",
+    "maximumMinutes": "Maximum time (minutes)",
+    "save": "Save window",
+    "configured": "Configured",
+    "pending": "Pending configuration",
+    "noSegments": "No route segments available",
+    "noSegmentsDescription": "Add at least two checkpoints to define route segments.",
+    "allConfigured": "All route segments are configured.",
+    "pendingCount": "{count} pending segments"
   }
 }

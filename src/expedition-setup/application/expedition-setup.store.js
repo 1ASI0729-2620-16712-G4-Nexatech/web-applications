@@ -2,8 +2,14 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { Route } from '../domain/model/route.entity.js';
 import { Checkpoint } from '../domain/model/checkpoint.entity.js';
+import {
+    ExpectedTimeWindow,
+} from '../domain/model/expected-time-window.entity.js';
 import { RouteAssembler } from '../infrastructure/route.assembler.js';
 import { CheckpointAssembler } from '../infrastructure/checkpoint.assembler.js';
+import {
+    ExpectedTimeWindowAssembler,
+} from '../infrastructure/expected-time-window.assembler.js';
 import { ExpeditionSetupApi } from '../infrastructure/expedition-setup-api.js';
 
 const expeditionSetupApi = new ExpeditionSetupApi();
@@ -17,9 +23,11 @@ function createApplicationError(code) {
 const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     const routes = ref([]);
     const checkpoints = ref([]);
+    const expectedTimeWindows = ref([]);
     const errors = ref([]);
     const routesLoaded = ref(false);
     const checkpointsLoaded = ref(false);
+    const expectedTimeWindowsLoaded = ref(false);
 
     const routesCount = computed(() => (
         routesLoaded.value ? routes.value.length : 0
@@ -51,6 +59,21 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             });
     }
 
+    function fetchExpectedTimeWindows() {
+        return expeditionSetupApi.getExpectedTimeWindows()
+            .then((response) => {
+                expectedTimeWindows.value = ExpectedTimeWindowAssembler
+                    .toEntitiesFromResponse(response);
+
+                expectedTimeWindowsLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expectedTimeWindowCreationFailed'),
+                );
+            });
+    }
+
     function isRouteNameDuplicated(name) {
         const normalizedName = name.trim().toLocaleLowerCase();
 
@@ -76,6 +99,54 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             checkpoint.routeId === routeId
             && checkpoint.sequenceOrder === sequenceOrder
         ));
+    }
+
+    function getExpectedTimeWindowsByRouteId(routeId) {
+        return expectedTimeWindows.value.filter((expectedTimeWindow) => (
+            expectedTimeWindow.routeId === routeId
+        ));
+    }
+
+    function isExpectedTimeWindowConfigured(
+        routeId,
+        fromCheckpointId,
+        toCheckpointId,
+    ) {
+        return expectedTimeWindows.value.some((expectedTimeWindow) => (
+            expectedTimeWindow.routeId === routeId
+            && expectedTimeWindow.fromCheckpointId === fromCheckpointId
+            && expectedTimeWindow.toCheckpointId === toCheckpointId
+        ));
+    }
+
+    function getRouteSegments(routeId) {
+        const orderedCheckpoints = getCheckpointsByRouteId(routeId);
+
+        return orderedCheckpoints.slice(0, -1).map((fromCheckpoint, index) => {
+            const toCheckpoint = orderedCheckpoints[index + 1];
+            const expectedTimeWindow = getExpectedTimeWindowsByRouteId(routeId)
+                .find((currentWindow) => (
+                    currentWindow.fromCheckpointId === fromCheckpoint.id
+                    && currentWindow.toCheckpointId === toCheckpoint.id
+                ));
+
+            return {
+                routeId,
+                fromCheckpoint,
+                toCheckpoint,
+                expectedTimeWindow,
+            };
+        });
+    }
+
+    function getPendingSegmentsByRouteId(routeId) {
+        return getRouteSegments(routeId).filter((segment) => (
+            !segment.expectedTimeWindow
+        ));
+    }
+
+    function hasValidTimeWindowLimits(minimumMinutes, maximumMinutes) {
+        return maximumMinutes > minimumMinutes;
     }
 
     /**
@@ -142,6 +213,54 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             });
     }
 
+    /**
+     * @param {ExpectedTimeWindow} expectedTimeWindow
+     * @returns {Promise<ExpectedTimeWindow|null>}
+     */
+    function addExpectedTimeWindow(expectedTimeWindow) {
+        if (
+            !hasValidTimeWindowLimits(
+                expectedTimeWindow.minimumMinutes,
+                expectedTimeWindow.maximumMinutes,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.expectedTimeWindowLimitsInvalid'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        if (
+            isExpectedTimeWindowConfigured(
+                expectedTimeWindow.routeId,
+                expectedTimeWindow.fromCheckpointId,
+                expectedTimeWindow.toCheckpointId,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.expectedTimeWindowAlreadyConfigured'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        return expeditionSetupApi.createExpectedTimeWindow(expectedTimeWindow)
+            .then((response) => {
+                const newExpectedTimeWindow = ExpectedTimeWindowAssembler
+                    .toEntityFromResource(response.data);
+
+                expectedTimeWindows.value.push(newExpectedTimeWindow);
+                return newExpectedTimeWindow;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expectedTimeWindowCreationFailed'),
+                );
+
+                return null;
+            });
+    }
 
     /**
      * @param {number} routeId
@@ -188,7 +307,6 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             });
     }
 
-
     function clearErrors() {
         errors.value = [];
     }
@@ -196,18 +314,25 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     return {
         routes,
         checkpoints,
+        expectedTimeWindows,
         errors,
         routesLoaded,
         checkpointsLoaded,
+        expectedTimeWindowsLoaded,
         routesCount,
         fetchRoutes,
         fetchCheckpoints,
+        fetchExpectedTimeWindows,
         getCheckpointsByRouteId,
+        getExpectedTimeWindowsByRouteId,
+        getRouteSegments,
+        getPendingSegmentsByRouteId,
         routeHasCheckpoints,
         addRoute,
         addCheckpoint,
-        clearErrors,
+        addExpectedTimeWindow,
         enableRoute,
+        clearErrors,
     };
 });
 
