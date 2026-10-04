@@ -12,6 +12,11 @@ const navigationItems = computed(() => [
     icon: 'pi pi-map',
     to: '/operations/routes',
   },
+  {
+    label: t('common.progress'),
+    icon: 'pi pi-chart-line',
+    to: '/operations/progress',
+  },
 ]);
 </script>
 
