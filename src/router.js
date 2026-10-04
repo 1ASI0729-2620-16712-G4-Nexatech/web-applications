@@ -14,6 +14,9 @@ const checkpointConfigurationView = () => import(
 const expectedTimeWindowConfigurationView = () => import(
     './expedition-setup/presentation/views/ExpectedTimeWindowConfigurationView.vue'
     );
+const expeditionGroupConfigurationView = () => import(
+    './expedition-setup/presentation/views/ExpeditionGroupConfigurationView.vue'
+    );
 const routes = [
     {
         path: '/',
@@ -43,6 +46,12 @@ const routes = [
         name: 'route-expected-time-windows',
         component: expectedTimeWindowConfigurationView,
         meta: { title: 'Expected Time Windows' },
+    },
+    {
+        path: '/operations/routes/:routeId/groups',
+        name: 'route-groups',
+        component: expeditionGroupConfigurationView,
+        meta: { title: 'Expedition Groups' },
     },
 ];
 
