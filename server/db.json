@@ -2,7 +2,7 @@
   "routes": [
     {
       "id": 1,
-      "name": "Huayhuash Alpine Circuit",
+      "name": "Cordillera Huayhuash Circuit",
       "origin": "Llamac, Áncash",
       "destination": "Llamac, Áncash",
       "distanceKm": 84.5,
@@ -13,21 +13,43 @@
     },
     {
       "id": 2,
-      "name": "Churin trekking",
-      "origin": "Entrance to Churín",
-      "destination": "Churin Mountain",
-      "distanceKm": 10,
-      "elevationGainMeters": 30,
-      "difficulty": "Intermediate",
-      "estimatedDurationMinutes": 360,
+      "name": "Santa Cruz Trek",
+      "origin": "Vaquería, Áncash",
+      "destination": "Cashapampa, Áncash",
+      "distanceKm": 50,
+      "elevationGainMeters": 3350,
+      "difficulty": "Advanced",
+      "estimatedDurationMinutes": 2400,
       "status": "enabled"
+    },
+    {
+      "id": 3,
+      "name": "Marcahuasi Stone Forest Route",
+      "origin": "San Pedro de Casta, Lima",
+      "destination": "Monumento de la Humanidad, Lima",
+      "distanceKm": 14.2,
+      "elevationGainMeters": 780,
+      "difficulty": "Intermediate",
+      "estimatedDurationMinutes": 480,
+      "status": "enabled"
+    },
+    {
+      "id": 4,
+      "name": "Ausangate Rainbow Circuit",
+      "origin": "Tinki, Cusco",
+      "destination": "Vinicunca Viewpoint, Cusco",
+      "distanceKm": 22.6,
+      "elevationGainMeters": 1450,
+      "difficulty": "Expert",
+      "estimatedDurationMinutes": 960,
+      "status": "draft"
     }
   ],
   "checkpoints": [
     {
       "id": 1,
       "routeId": 1,
-      "location": "Llamac",
+      "location": "Llamac Base Camp",
       "sequenceOrder": 1
     },
     {
@@ -45,14 +67,56 @@
     {
       "id": 4,
       "routeId": 1,
-      "location": "Llamac",
+      "location": "Jahuacocha Camp",
       "sequenceOrder": 4
     },
     {
       "id": 5,
+      "routeId": 1,
+      "location": "Llamac Return Point",
+      "sequenceOrder": 5
+    },
+    {
+      "id": 6,
       "routeId": 2,
-      "location": "Pikitos restaurant",
+      "location": "Vaquería Trailhead",
       "sequenceOrder": 1
+    },
+    {
+      "id": 7,
+      "routeId": 2,
+      "location": "Punta Unión Pass",
+      "sequenceOrder": 2
+    },
+    {
+      "id": 8,
+      "routeId": 2,
+      "location": "Llanganuco Camp",
+      "sequenceOrder": 3
+    },
+    {
+      "id": 9,
+      "routeId": 2,
+      "location": "Cashapampa Exit",
+      "sequenceOrder": 4
+    },
+    {
+      "id": 10,
+      "routeId": 3,
+      "location": "San Pedro de Casta",
+      "sequenceOrder": 1
+    },
+    {
+      "id": 11,
+      "routeId": 3,
+      "location": "Marcahuasi Amphitheater",
+      "sequenceOrder": 2
+    },
+    {
+      "id": 12,
+      "routeId": 3,
+      "location": "Monument of Humanity",
+      "sequenceOrder": 3
     }
   ],
   "expected-time-windows": [
@@ -61,76 +125,218 @@
       "routeId": 1,
       "fromCheckpointId": 1,
       "toCheckpointId": 2,
-      "minimumMinutes": 60,
-      "maximumMinutes": 120
+      "minimumMinutes": 420,
+      "maximumMinutes": 540
+    },
+    {
+      "id": 2,
+      "routeId": 1,
+      "fromCheckpointId": 2,
+      "toCheckpointId": 3,
+      "minimumMinutes": 480,
+      "maximumMinutes": 660
+    },
+    {
+      "id": 3,
+      "routeId": 1,
+      "fromCheckpointId": 3,
+      "toCheckpointId": 4,
+      "minimumMinutes": 540,
+      "maximumMinutes": 720
+    },
+    {
+      "id": 4,
+      "routeId": 1,
+      "fromCheckpointId": 4,
+      "toCheckpointId": 5,
+      "minimumMinutes": 480,
+      "maximumMinutes": 600
+    },
+    {
+      "id": 5,
+      "routeId": 2,
+      "fromCheckpointId": 6,
+      "toCheckpointId": 7,
+      "minimumMinutes": 420,
+      "maximumMinutes": 540
+    },
+    {
+      "id": 6,
+      "routeId": 2,
+      "fromCheckpointId": 7,
+      "toCheckpointId": 8,
+      "minimumMinutes": 360,
+      "maximumMinutes": 480
+    },
+    {
+      "id": 7,
+      "routeId": 2,
+      "fromCheckpointId": 8,
+      "toCheckpointId": 9,
+      "minimumMinutes": 360,
+      "maximumMinutes": 480
+    },
+    {
+      "id": 8,
+      "routeId": 3,
+      "fromCheckpointId": 10,
+      "toCheckpointId": 11,
+      "minimumMinutes": 180,
+      "maximumMinutes": 240
+    },
+    {
+      "id": 9,
+      "routeId": 3,
+      "fromCheckpointId": 11,
+      "toCheckpointId": 12,
+      "minimumMinutes": 120,
+      "maximumMinutes": 180
+    }
+  ],
+  "field-guides": [
+    {
+      "id": 1,
+      "name": "Elena Vargas"
+    },
+    {
+      "id": 2,
+      "name": "Diego Huamán"
+    },
+    {
+      "id": 3,
+      "name": "Lucía Paredes"
+    },
+    {
+      "id": 4,
+      "name": "Mateo Salazar"
     }
   ],
   "expedition-groups": [
     {
       "id": 1,
       "routeId": 1,
-      "name": "los wawitas",
+      "name": "Huayhuash Summit Team",
       "departureDate": "2026-10-05",
-      "maximumCapacity": 15,
-      "fieldGuideId": 2
+      "maximumCapacity": 12,
+      "fieldGuideId": 1
     },
     {
       "id": 2,
       "routeId": 2,
-      "name": "los dibujitos",
-      "departureDate": "2026-10-06",
-      "maximumCapacity": 20,
+      "name": "Santa Cruz Glacier Team",
+      "departureDate": "2026-10-05",
+      "maximumCapacity": 10,
       "fieldGuideId": 2
     },
     {
       "id": 3,
-      "routeId": 2,
-      "name": "upas",
-      "departureDate": "2026-10-05",
-      "maximumCapacity": 12,
+      "routeId": 3,
+      "name": "Marcahuasi Weekend Group",
+      "departureDate": "2026-10-11",
+      "maximumCapacity": 14,
       "fieldGuideId": 3
     },
     {
       "id": 4,
       "routeId": 1,
-      "name": "akipus",
-      "departureDate": "2026-10-06",
-      "maximumCapacity": 3,
+      "name": "Huayhuash Acclimatization Group",
+      "departureDate": "2026-10-12",
+      "maximumCapacity": 8,
+      "fieldGuideId": 4
+    },
+    {
+      "id": 5,
+      "routeId": 2,
+      "name": "Santa Cruz Orientation Group",
+      "departureDate": "2026-10-18",
+      "maximumCapacity": 10,
       "fieldGuideId": null
-    }
-  ],
-  "field-guides": [
-    {
-      "id": 1,
-      "name": "Mateo Rios"
-    },
-    {
-      "id": 2,
-      "name": "Lucía Fernández"
-    },
-    {
-      "id": 3,
-      "name": "Carlos Quispe"
     }
   ],
   "manifest-entries": [
     {
       "id": 1,
       "expeditionGroupId": 1,
-      "fullName": "Miler Rodriguez",
-      "identityDocument": "75920355"
+      "fullName": "Valeria Torres",
+      "identityDocument": "70010001"
     },
     {
       "id": 2,
-      "expeditionGroupId": 3,
-      "fullName": "Miler Rodriguez",
-      "identityDocument": "75920355"
+      "expeditionGroupId": 1,
+      "fullName": "Andrés Medina",
+      "identityDocument": "70010002"
     },
     {
       "id": 3,
+      "expeditionGroupId": 1,
+      "fullName": "Camila Rojas",
+      "identityDocument": "70010003"
+    },
+    {
+      "id": 4,
+      "expeditionGroupId": 1,
+      "fullName": "Sofía Herrera",
+      "identityDocument": "70010004"
+    },
+    {
+      "id": 5,
+      "expeditionGroupId": 1,
+      "fullName": "Bruno Castillo",
+      "identityDocument": "70010005"
+    },
+    {
+      "id": 6,
+      "expeditionGroupId": 2,
+      "fullName": "Mariana Flores",
+      "identityDocument": "70020001"
+    },
+    {
+      "id": 7,
+      "expeditionGroupId": 2,
+      "fullName": "Joaquín Ramos",
+      "identityDocument": "70020002"
+    },
+    {
+      "id": 8,
+      "expeditionGroupId": 2,
+      "fullName": "Renata Silva",
+      "identityDocument": "70020003"
+    },
+    {
+      "id": 9,
+      "expeditionGroupId": 2,
+      "fullName": "Pablo Núñez",
+      "identityDocument": "70020004"
+    },
+    {
+      "id": 10,
+      "expeditionGroupId": 3,
+      "fullName": "Daniela Cruz",
+      "identityDocument": "70030001"
+    },
+    {
+      "id": 11,
+      "expeditionGroupId": 3,
+      "fullName": "Martín Vega",
+      "identityDocument": "70030002"
+    },
+    {
+      "id": 12,
+      "expeditionGroupId": 3,
+      "fullName": "Ariana Castro",
+      "identityDocument": "70030003"
+    },
+    {
+      "id": 13,
       "expeditionGroupId": 4,
-      "fullName": "Mateo Leon",
-      "identityDocument": "12345678"
+      "fullName": "Gabriel Soto",
+      "identityDocument": "70040001"
+    },
+    {
+      "id": 14,
+      "expeditionGroupId": 4,
+      "fullName": "Elisa Navarro",
+      "identityDocument": "70040002"
     }
   ],
   "group-progress": [
@@ -139,58 +345,22 @@
       "expeditionGroupId": 1,
       "lastConfirmedCheckpointLabel": "Laguna Mituco",
       "currentSegmentLabel": "Laguna Mituco → Paso Cacananpunta",
-      "estimatedProgressPercentage": 45,
-      "recordedAt": "2026-10-04T09:15:00",
-      "synchronizedAt": "2026-10-04T09:15:00",
+      "estimatedProgressPercentage": 42,
+      "recordedAt": "2026-10-05T09:10:00",
+      "synchronizedAt": "2026-10-05T09:22:00",
       "status": "on-track",
       "riskLevel": "low"
     },
     {
       "id": 2,
       "expeditionGroupId": 2,
-      "lastConfirmedCheckpointLabel": "Pikitos restaurant",
-      "currentSegmentLabel": "Pikitos restaurant → Churin Mountain",
-      "estimatedProgressPercentage": 20,
-      "recordedAt": "2026-10-03T14:00:00",
-      "synchronizedAt": "2026-10-03T14:00:00",
+      "lastConfirmedCheckpointLabel": "Punta Unión Pass",
+      "currentSegmentLabel": "Punta Unión Pass → Llanganuco Camp",
+      "estimatedProgressPercentage": 57,
+      "recordedAt": "2026-10-05T07:40:00",
+      "synchronizedAt": "2026-10-05T09:35:00",
       "status": "delayed",
       "riskLevel": "medium"
-    }
-  ],
-  "early-warning-alerts": [
-    {
-      "id": 1,
-      "expeditionGroupId": 2,
-      "type": "delay",
-      "priority": "high",
-      "status": "resolved",
-      "triggeredAt": "2026-10-03T14:05:00",
-      "resolvedAt": "2026-10-05T22:40:48.367Z",
-      "riskEvidence": [
-        {
-          "metricType": "elapsed-time",
-          "observedValue": "95 min",
-          "expectedValue": "≤ 60 min",
-          "recordedAt": "2026-10-03T14:00:00"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "expeditionGroupId": 1,
-      "type": "route-deviation",
-      "priority": "low",
-      "status": "resolved",
-      "triggeredAt": "2026-10-02T11:00:00",
-      "resolvedAt": "2026-10-02T11:30:00",
-      "riskEvidence": [
-        {
-          "metricType": "route-position",
-          "observedValue": "180 m off corridor",
-          "expectedValue": "≤ 50 m",
-          "recordedAt": "2026-10-02T10:55:00"
-        }
-      ]
     }
   ]
 }
