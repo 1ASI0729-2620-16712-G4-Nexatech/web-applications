@@ -1,64 +1,73 @@
 <script setup>
+/**
+ * @component language-switcher
+ * @summary Toggles active application language between ES and EN.
+ * @author Ariel Roberto Mendoza Blanco - U202419667
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const localeStorageKey = 'vitaltrek-locale';
-const { locale, t } = useI18n();
+const { locale } = useI18n();
 
-const languageOptions = computed(() => [
-  { label: t('language.spanish'), value: 'es' },
-  { label: t('language.english'), value: 'en' },
-]);
+const currentLocale = computed(() => locale.value);
 
-const selectedLocale = computed({
-  get: () => locale.value,
-  set: (newLocale) => {
+const setLocale = (newLocale) => {
+  if (locale.value !== newLocale) {
     locale.value = newLocale;
     localStorage.setItem(localeStorageKey, newLocale);
-  },
-});
+  }
+};
 </script>
 
 <template>
-  <div class="language-switcher">
-    <label for="language-selector" class="sr-only">
-      {{ t('language.selector') }}
-    </label>
-
-    <pv-select
-        id="language-selector"
-        v-model="selectedLocale"
-        :options="languageOptions"
-        option-label="label"
-        option-value="value"
-        class="language-select"
+  <div class="language-switcher" role="group" aria-label="Language selection">
+    <pv-button
+      type="button"
+      label="ES"
+      :aria-pressed="currentLocale === 'es'"
+      aria-label="Cambiar idioma a Español"
+      :class="['lang-btn', { 'is-active': currentLocale === 'es' }]"
+      @click="setLocale('es')"
+    />
+    <pv-button
+      type="button"
+      label="EN"
+      :aria-pressed="currentLocale === 'en'"
+      aria-label="Switch language to English"
+      :class="['lang-btn', { 'is-active': currentLocale === 'en' }]"
+      @click="setLocale('en')"
     />
   </div>
 </template>
 
 <style scoped>
-.language-select {
-  width: 8rem;
+.language-switcher {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem;
+  border-radius: 6px;
 }
 
-:deep(.p-select) {
-  min-height: 2.5rem;
-  border-color: rgba(255, 255, 255, 0.35);
-  background: transparent !important;
-  color: #ffffff !important;
+:deep(.lang-btn) {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-:deep(.p-select-label),
-:deep(.p-select-dropdown) {
-  color: #ffffff !important;
+:deep(.lang-btn:hover) {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+:deep(.lang-btn.is-active) {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 </style>
