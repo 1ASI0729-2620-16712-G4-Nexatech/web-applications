@@ -19,13 +19,11 @@
     "selector": "Language"
   },
   "layout": {
-    "dashboard": "Operations Dashboard",
     "navigation": "Operations navigation",
     "routeSetupEnvironment": "Route setup environment",
     "commandBase": "Operations Command Base",
     "sector": "Andes and Amazon Sector",
     "routesAndCheckpoints": "Routes and checkpoints",
-    "fieldGuideDashboard": "Field guide workspace",
     "fieldGuideNavigation": "Field navigation",
     "fieldGuideEnvironment": "Assigned groups environment",
     "fieldGuideCommandBase": "Field operation",
@@ -43,7 +41,9 @@
     "configureTimeWindows": "Configure time windows",
     "manageGroups": "Manage groups",
     "backToGroups": "Back to groups",
-    "progress": "Progress"
+    "progress": "Progress",
+    "alerts": "Early warning alerts",
+    "dashboard": "Dashboard"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -130,7 +130,10 @@
     "manifestEntryDocumentDuplicated": "A participant with this identity document is already registered in this group.",
     "manifestEntryDateConflict": "This identity document is already registered in another group departing on the same date.",
     "manifestEntryCapacityExceeded": "This group has reached its maximum capacity.",
-    "groupProgressFetchFailed": "Progress data could not be loaded."
+    "groupProgressFetchFailed": "Progress data could not be loaded.",
+    "earlyWarningAlertsFetchFailed": "Early warning alerts could not be loaded.",
+    "earlyWarningAlertActionFailed": "The early warning alert could not be updated.",
+    "earlyWarningAlertNotActionable": "This alert is already closed and no longer accepts actions."
   },
 
   "checkpoints": {
@@ -230,5 +233,56 @@
     "openManifest": "Manage manifest",
     "noGroups": "No assigned groups",
     "noGroupsDescription": "The selected field guide has no assigned groups."
+  },
+  "earlyWarningAlerts": {
+    "title": "Early warning alerts",
+    "description": "Monitor the risk conditions detected on active expedition groups.",
+    "activeCount": "{count} active alerts",
+    "observedValue": "Observed value",
+    "expectedValue": "Expected value",
+    "acknowledge": "Acknowledge",
+    "resolve": "Resolve",
+    "dismissAsFalseAlarm": "Dismiss as false alarm",
+    "noAlerts": "No alerts registered",
+    "noAlertsDescription": "Expedition groups show no risk conditions at this time.",
+    "type": {
+      "delay": "Segment delay",
+      "vital-sign-anomaly": "Vital sign anomaly",
+      "route-deviation": "Route deviation"
+    },
+    "priority": {
+      "low": "Low priority",
+      "medium": "Medium priority",
+      "high": "High priority"
+    },
+    "status": {
+      "active": "Active",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "dismissed": "Dismissed"
+    }
+  },
+  "operationsDashboard": {
+    "eyebrow": "Operations overview",
+    "title": "Operations dashboard",
+    "description": "A quick look at your routes, groups, and alerts before diving into the detail.",
+    "stats": {
+      "routes": "Registered routes",
+      "routesHint": "{enabled} enabled of {total}",
+      "groups": "Expedition groups",
+      "delayedGroups": "Delayed groups",
+      "activeAlerts": "Active alerts"
+    },
+    "shortcuts": {
+      "routesTitle": "Routes and checkpoints",
+      "routesDescription": "Configure routes, checkpoints, and time windows.",
+      "progressTitle": "Progress tracking",
+      "progressDescription": "Monitor the estimated progress of active groups.",
+      "alertsTitle": "Early warning alerts",
+      "alertsDescription": "Review and act on detected risk conditions."
+    },
+    "topAlertsTitle": "Alerts needing attention",
+    "topAlertsEmpty": "No active or acknowledged alerts right now.",
+    "viewAll": "View all"
   }
 }

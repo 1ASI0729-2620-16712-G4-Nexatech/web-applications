@@ -17,12 +17,6 @@ const isFieldGuide = computed(() => (
     props.workspace === 'field-guide'
 ));
 
-const workspaceSubtitle = computed(() => (
-    isFieldGuide.value
-        ? t('layout.fieldGuideDashboard')
-        : t('layout.dashboard')
-));
-
 const navigationTitle = computed(() => (
     isFieldGuide.value
         ? t('layout.fieldGuideNavigation')
@@ -54,6 +48,11 @@ const navigationItems = computed(() => {
 
   return [
     {
+      label: t('common.dashboard'),
+      icon: 'pi pi-home',
+      to: '/operations',
+    },
+    {
       label: t('layout.routesAndCheckpoints'),
       icon: 'pi pi-map',
       to: '/operations/routes',
@@ -62,6 +61,11 @@ const navigationItems = computed(() => {
       label: t('common.progress'),
       icon: 'pi pi-chart-line',
       to: '/operations/progress',
+    },
+    {
+      label: t('common.alerts'),
+      icon: 'pi pi-bell',
+      to: '/operations/alerts',
     },
   ];
 });
@@ -73,11 +77,6 @@ const navigationItems = computed(() => {
       <div class="brand">
         <div class="brand-logo-container">
           <img :src="logoUrl" :alt="t('app.name')" class="brand-logo">
-        </div>
-
-        <div>
-          <strong>{{ t('app.name') }}</strong>
-          <small>{{ workspaceSubtitle }}</small>
         </div>
       </div>
 
@@ -156,43 +155,23 @@ const navigationItems = computed(() => {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  min-height: 6.625rem;
-  padding: 1.5rem 1.75rem;
+  padding: 1.5rem;
 }
 
 .brand-logo-container {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 100%;
+  aspect-ratio: 1024 / 347;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
+  background: #ffffff;
+  padding: 0.5rem;
 }
 
 .brand-logo {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-}
-
-.brand strong,
-.brand small {
-  display: block;
-}
-
-.brand strong {
-  font-family: 'Sora', sans-serif;
-  font-size: 1.25rem;
-}
-
-.brand small {
-  margin-top: 0.2rem;
-  color: #b8d0c4;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
 .sidebar-divider {

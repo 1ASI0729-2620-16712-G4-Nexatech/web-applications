@@ -41,7 +41,7 @@ function selectWorkspace(path) {
               :label="t('roleSelection.operationsAction')"
               icon="pi pi-arrow-right"
               icon-pos="right"
-              @click="selectWorkspace('/operations/routes')"
+              @click="selectWorkspace('/operations')"
           />
         </article>
 
