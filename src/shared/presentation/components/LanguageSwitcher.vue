@@ -3,20 +3,16 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const localeStorageKey = 'vitaltrek-locale';
-const { locale, t } = useI18n();
+const { locale } = useI18n();
 
-const languageOptions = computed(() => [
-  { label: t('language.spanish'), value: 'es' },
-  { label: t('language.english'), value: 'en' },
-]);
+const currentLocale = computed(() => locale.value);
 
-const selectedLocale = computed({
-  get: () => locale.value,
-  set: (newLocale) => {
+const setLocale = (newLocale) => {
+  if (locale.value !== newLocale) {
     locale.value = newLocale;
     localStorage.setItem(localeStorageKey, newLocale);
-  },
-});
+  }
+};
 </script>
 
 <template>
