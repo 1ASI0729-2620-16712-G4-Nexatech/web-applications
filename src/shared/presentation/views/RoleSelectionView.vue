@@ -9,6 +9,7 @@ const { t } = useI18n();
 function selectWorkspace(path) {
   router.push(path);
 }
+
 </script>
 
 <template>
