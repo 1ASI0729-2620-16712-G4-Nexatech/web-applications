@@ -2,6 +2,17 @@
   "app": {
     "name": "VitalTrek"
   },
+  "roleSelection": {
+    "eyebrow": "Demo access",
+    "title": "Select your workspace",
+    "description": "Choose the role you want to use to explore VitalTrek.",
+    "operationsTitle": "Operations Administrator",
+    "operationsDescription": "Configure routes, checkpoints, groups, and operational tracking.",
+    "operationsAction": "Open operations workspace",
+    "fieldGuideTitle": "Field Guide",
+    "fieldGuideDescription": "Review assigned groups and register their manifest.",
+    "fieldGuideAction": "Open field workspace"
+  },
   "language": {
     "english": "English",
     "spanish": "Spanish",
@@ -13,7 +24,13 @@
     "routeSetupEnvironment": "Route setup environment",
     "commandBase": "Operations Command Base",
     "sector": "Andes and Amazon Sector",
-    "routesAndCheckpoints": "Routes and checkpoints"
+    "routesAndCheckpoints": "Routes and checkpoints",
+    "fieldGuideDashboard": "Field guide workspace",
+    "fieldGuideNavigation": "Field navigation",
+    "fieldGuideEnvironment": "Assigned groups environment",
+    "fieldGuideCommandBase": "Field operation",
+    "assignedGroups": "Assigned groups",
+    "changeWorkspace": "Change workspace"
   },
   "common": {
     "newRoute": "New route",
@@ -199,5 +216,19 @@
     "staleWarning": "No recent synchronization. Progress shown is an estimate.",
     "tourNotActive": "Tracking is enabled once this group starts its tour.",
     "noGroups": "No expedition groups found"
+  },
+  "fieldGuideWorkspace": {
+    "title": "Field workspace",
+    "description": "Review assigned groups and register the participant manifest.",
+    "demoGuideLabel": "Demo field guide",
+    "demoGuidePlaceholder": "Select a field guide",
+    "assignedGroups": "Assigned groups",
+    "registeredCount": "{count} assigned groups",
+    "route": "Route",
+    "departureDate": "Departure",
+    "capacity": "Maximum capacity",
+    "openManifest": "Manage manifest",
+    "noGroups": "No assigned groups",
+    "noGroupsDescription": "The selected field guide has no assigned groups."
   }
 }

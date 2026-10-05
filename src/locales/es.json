@@ -2,6 +2,17 @@
   "app": {
     "name": "VitalTrek"
   },
+  "roleSelection": {
+    "eyebrow": "Acceso de demostración",
+    "title": "Selecciona tu espacio de trabajo",
+    "description": "Elige el rol con el que deseas recorrer VitalTrek.",
+    "operationsTitle": "Operations Administrator",
+    "operationsDescription": "Configura rutas, checkpoints, grupos y seguimiento operativo.",
+    "operationsAction": "Ir al panel de operaciones",
+    "fieldGuideTitle": "Field Guide",
+    "fieldGuideDescription": "Consulta los grupos asignados y registra su manifiesto.",
+    "fieldGuideAction": "Ir al espacio de campo"
+  },
   "language": {
     "english": "Inglés",
     "spanish": "Español",
@@ -13,7 +24,13 @@
     "routeSetupEnvironment": "Entorno de configuración de rutas",
     "commandBase": "Base de comando de operaciones",
     "sector": "Sector Andes y Amazonía",
-    "routesAndCheckpoints": "Rutas y puntos de control"
+    "routesAndCheckpoints": "Rutas y puntos de control",
+    "fieldGuideDashboard": "Espacio de Field Guide",
+    "fieldGuideNavigation": "Navegación de campo",
+    "fieldGuideEnvironment": "Entorno de grupos asignados",
+    "fieldGuideCommandBase": "Operación de campo",
+    "assignedGroups": "Grupos asignados",
+    "changeWorkspace": "Cambiar espacio"
   },
   "common": {
     "newRoute": "Nueva ruta",
@@ -199,5 +216,19 @@
     "staleWarning": "Sin sincronización reciente. El progreso mostrado es una estimación.",
     "tourNotActive": "El seguimiento se habilita al iniciar el recorrido de este grupo.",
     "noGroups": "No se encontraron grupos de expedición"
+  },
+  "fieldGuideWorkspace": {
+    "title": "Espacio de campo",
+    "description": "Revisa los grupos asignados y registra el manifiesto de participantes.",
+    "demoGuideLabel": "Guía de campo de demostración",
+    "demoGuidePlaceholder": "Selecciona un guía de campo",
+    "assignedGroups": "Grupos asignados",
+    "registeredCount": "{count} grupos asignados",
+    "route": "Ruta",
+    "departureDate": "Salida",
+    "capacity": "Capacidad máxima",
+    "openManifest": "Gestionar manifiesto",
+    "noGroups": "No hay grupos asignados",
+    "noGroupsDescription": "El guía seleccionado no tiene grupos asignados."
   }
 }

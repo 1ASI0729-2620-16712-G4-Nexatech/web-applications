@@ -23,53 +23,76 @@ const touristManifestView = () => import(
 const groupProgressDashboardView = () => import(
     './field-tracking/presentation/views/GroupProgressDashboardView.vue'
     );
+const roleSelectionView = () => import(
+    './shared/presentation/views/RoleSelectionView.vue'
+    );
+
+const fieldGuideWorkspaceView = () => import(
+    './expedition-setup/presentation/views/FieldGuideWorkspaceView.vue'
+    );
+const operationsMeta = (title) => ({
+    title,
+    workspace: 'operations',
+});
+
+const fieldGuideMeta = (title) => ({
+    title,
+    workspace: 'field-guide',
+});
 const routes = [
     {
         path: '/',
-        redirect: '/operations/routes',
+        name: 'role-selection',
+        component: roleSelectionView,
+        meta: { title: 'Select workspace' },
     },
     {
         path: '/operations/routes',
         name: 'routes',
         component: routeListView,
-        meta: { title: 'Routes' },
+        meta: operationsMeta('Routes'),
     },
     {
         path: '/operations/routes/new',
         name: 'route-new',
         component: routeFormView,
-        meta: { title: 'New Route' },
+        meta: operationsMeta('New Route'),
     },
-
     {
         path: '/operations/routes/:routeId/checkpoints',
         name: 'route-checkpoints',
         component: checkpointConfigurationView,
-        meta: { title: 'Checkpoints' },
+        meta: operationsMeta('Checkpoints'),
     },
     {
         path: '/operations/routes/:routeId/expected-time-windows',
         name: 'route-expected-time-windows',
         component: expectedTimeWindowConfigurationView,
-        meta: { title: 'Expected Time Windows' },
+        meta: operationsMeta('Expected Time Windows'),
     },
     {
         path: '/operations/routes/:routeId/groups',
         name: 'route-groups',
         component: expeditionGroupConfigurationView,
-        meta: { title: 'Expedition Groups' },
-    },
-    {
-        path: '/operations/routes/:routeId/groups/:groupId/manifest',
-        name: 'group-manifest',
-        component: touristManifestView,
-        meta: { title: 'Tourist Manifest' },
+        meta: operationsMeta('Expedition Groups'),
     },
     {
         path: '/operations/progress',
         name: 'group-progress-dashboard',
         component: groupProgressDashboardView,
-        meta: { title: 'Group Progress' },
+        meta: operationsMeta('Group Progress'),
+    },
+    {
+        path: '/field-guide/groups',
+        name: 'field-guide-workspace',
+        component: fieldGuideWorkspaceView,
+        meta: fieldGuideMeta('Field Workspace'),
+    },
+    {
+        path: '/field-guide/groups/:groupId/manifest',
+        name: 'field-guide-manifest',
+        component: touristManifestView,
+        meta: fieldGuideMeta('Tourist Manifest'),
     },
 ];
 

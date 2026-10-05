@@ -4,20 +4,67 @@ import { useI18n } from 'vue-i18n';
 import logoUrl from '../../../assets/vitaltrek-logo.png';
 import LanguageSwitcher from './LanguageSwitcher.vue';
 
+const props = defineProps({
+  workspace: {
+    type: String,
+    required: true,
+  },
+});
+
 const { t } = useI18n();
 
-const navigationItems = computed(() => [
-  {
-    label: t('layout.routesAndCheckpoints'),
-    icon: 'pi pi-map',
-    to: '/operations/routes',
-  },
-  {
-    label: t('common.progress'),
-    icon: 'pi pi-chart-line',
-    to: '/operations/progress',
-  },
-]);
+const isFieldGuide = computed(() => (
+    props.workspace === 'field-guide'
+));
+
+const workspaceSubtitle = computed(() => (
+    isFieldGuide.value
+        ? t('layout.fieldGuideDashboard')
+        : t('layout.dashboard')
+));
+
+const navigationTitle = computed(() => (
+    isFieldGuide.value
+        ? t('layout.fieldGuideNavigation')
+        : t('layout.navigation')
+));
+
+const workspaceEnvironment = computed(() => (
+    isFieldGuide.value
+        ? t('layout.fieldGuideEnvironment')
+        : t('layout.routeSetupEnvironment')
+));
+
+const workspaceCommandBase = computed(() => (
+    isFieldGuide.value
+        ? t('layout.fieldGuideCommandBase')
+        : t('layout.commandBase')
+));
+
+const navigationItems = computed(() => {
+  if (isFieldGuide.value) {
+    return [
+      {
+        label: t('layout.assignedGroups'),
+        icon: 'pi pi-users',
+        to: '/field-guide/groups',
+      },
+    ];
+  }
+
+  return [
+    {
+      label: t('layout.routesAndCheckpoints'),
+      icon: 'pi pi-map',
+      to: '/operations/routes',
+    },
+    {
+      label: t('common.progress'),
+      icon: 'pi pi-chart-line',
+      to: '/operations/progress',
+    },
+  ];
+});
 </script>
 
 <template>
@@ -30,15 +77,15 @@ const navigationItems = computed(() => [
 
         <div>
           <strong>{{ t('app.name') }}</strong>
-          <small>{{ t('layout.dashboard') }}</small>
+          <small>{{ workspaceSubtitle }}</small>
         </div>
       </div>
 
       <div class="sidebar-divider" />
 
-      <p class="navigation-title">{{ t('layout.navigation') }}</p>
+      <p class="navigation-title">{{ navigationTitle }}</p>
 
-      <nav class="navigation" :aria-label="t('layout.navigation')">
+      <nav class="navigation" :aria-label="navigationTitle">
         <RouterLink
             v-for="item in navigationItems"
             :key="item.to"
@@ -52,11 +99,17 @@ const navigationItems = computed(() => [
       </nav>
 
       <div class="sidebar-bottom">
+        <RouterLink to="/" class="workspace-switcher">
+          <i class="pi pi-arrow-left" />
+          <span>{{ t('layout.changeWorkspace') }}</span>
+        </RouterLink>
+
         <div class="connection-status">
           <span class="status-dot" />
+
           <div>
             <strong>{{ t('app.name') }}</strong>
-            <small>{{ t('layout.routeSetupEnvironment') }}</small>
+            <small>{{ workspaceEnvironment }}</small>
           </div>
         </div>
       </div>
@@ -70,7 +123,7 @@ const navigationItems = computed(() => [
         </div>
 
         <div class="topbar-actions">
-          <span class="topbar-section">{{ t('layout.commandBase') }}</span>
+          <span class="topbar-section">{{ workspaceCommandBase }}</span>
           <LanguageSwitcher />
         </div>
       </header>
@@ -186,6 +239,24 @@ const navigationItems = computed(() => [
 
 .navigation-link i {
   font-size: 1.25rem;
+}
+.workspace-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.625rem;
+  color: #d7e8df;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.workspace-switcher:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .sidebar-bottom {

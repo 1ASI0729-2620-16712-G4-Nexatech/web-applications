@@ -39,6 +39,9 @@ const isAtMaximumCapacity = computed(() => (
 const isLoading = computed(() => (
     !store.expeditionGroupsLoaded || !store.manifestEntriesLoaded
 ));
+const isFieldGuideWorkspace = computed(() => (
+    route.meta.workspace === 'field-guide'
+));
 
 function validateForm() {
   fieldErrors.fullName = '';
@@ -87,6 +90,11 @@ function submitForm() {
 }
 
 function goBackToGroups() {
+  if (isFieldGuideWorkspace.value) {
+    router.push({ name: 'field-guide-workspace' });
+    return;
+  }
+
   router.push({
     name: 'route-groups',
     params: { routeId: Number(route.params.routeId) },

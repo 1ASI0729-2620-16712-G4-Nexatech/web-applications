@@ -112,12 +112,7 @@ function goBackToRoutes() {
   router.push({ name: 'routes' });
 }
 
-function goToManifest(expeditionGroup) {
-  router.push({
-    name: 'group-manifest',
-    params: { routeId, groupId: expeditionGroup.id },
-  });
-}
+
 
 function getFieldGuideName(fieldGuideId) {
   return store.fieldGuides.find((fieldGuide) => (
@@ -364,13 +359,6 @@ onMounted(() => {
                       @click="openGuideAssignment(expeditionGroup)"
                   />
 
-                  <pv-button
-                      :label="t('expeditionGroups.viewManifest')"
-                      icon="pi pi-id-card"
-                      size="small"
-                      outlined
-                      @click="goToManifest(expeditionGroup)"
-                  />
                 </div>
               </div>
 
