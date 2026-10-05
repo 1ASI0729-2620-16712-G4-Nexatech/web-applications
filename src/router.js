@@ -23,8 +23,15 @@ const touristManifestView = () => import(
 const groupProgressDashboardView = () => import(
     './field-tracking/presentation/views/GroupProgressDashboardView.vue'
     );
+const earlyWarningAlertDashboardView = () => import(
+    './safety-monitoring/presentation/views/EarlyWarningAlertDashboardView.vue'
+    );
 const roleSelectionView = () => import(
     './shared/presentation/views/RoleSelectionView.vue'
+    );
+
+const operationsDashboardView = () => import(
+    './shared/presentation/views/OperationsDashboardView.vue'
     );
 
 const fieldGuideWorkspaceView = () => import(
@@ -45,6 +52,12 @@ const routes = [
         name: 'role-selection',
         component: roleSelectionView,
         meta: { title: 'Select workspace' },
+    },
+    {
+        path: '/operations',
+        name: 'operations-dashboard',
+        component: operationsDashboardView,
+        meta: operationsMeta('Dashboard'),
     },
     {
         path: '/operations/routes',
@@ -81,6 +94,12 @@ const routes = [
         name: 'group-progress-dashboard',
         component: groupProgressDashboardView,
         meta: operationsMeta('Group Progress'),
+    },
+    {
+        path: '/operations/alerts',
+        name: 'early-warning-alerts',
+        component: earlyWarningAlertDashboardView,
+        meta: operationsMeta('Early Warning Alerts'),
     },
     {
         path: '/field-guide/groups',

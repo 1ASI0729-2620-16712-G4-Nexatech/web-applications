@@ -19,13 +19,11 @@
     "selector": "Idioma"
   },
   "layout": {
-    "dashboard": "Panel de operaciones",
     "navigation": "Navegación de operaciones",
     "routeSetupEnvironment": "Entorno de configuración de rutas",
     "commandBase": "Base de comando de operaciones",
     "sector": "Sector Andes y Amazonía",
     "routesAndCheckpoints": "Rutas y puntos de control",
-    "fieldGuideDashboard": "Espacio de Field Guide",
     "fieldGuideNavigation": "Navegación de campo",
     "fieldGuideEnvironment": "Entorno de grupos asignados",
     "fieldGuideCommandBase": "Operación de campo",
@@ -43,7 +41,9 @@
     "configureTimeWindows": "Configurar ventanas de tiempo",
     "manageGroups": "Gestionar grupos",
     "backToGroups": "Volver a grupos",
-    "progress": "Seguimiento"
+    "progress": "Seguimiento",
+    "alerts": "Alertas tempranas",
+    "dashboard": "Inicio"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -130,7 +130,10 @@
     "manifestEntryDocumentDuplicated": "Ya hay un participante registrado con este documento de identidad en este grupo.",
     "manifestEntryDateConflict": "Este documento de identidad ya está registrado en otro grupo con salida en la misma fecha.",
     "manifestEntryCapacityExceeded": "Este grupo alcanzó su capacidad máxima.",
-    "groupProgressFetchFailed": "No se pudo cargar la información de seguimiento."
+    "groupProgressFetchFailed": "No se pudo cargar la información de seguimiento.",
+    "earlyWarningAlertsFetchFailed": "No se pudo cargar las alertas tempranas.",
+    "earlyWarningAlertActionFailed": "No se pudo actualizar la alerta temprana.",
+    "earlyWarningAlertNotActionable": "Esta alerta ya fue cerrada y no admite más acciones."
   },
 
   "checkpoints": {
@@ -230,5 +233,56 @@
     "openManifest": "Gestionar manifiesto",
     "noGroups": "No hay grupos asignados",
     "noGroupsDescription": "El guía seleccionado no tiene grupos asignados."
+  },
+  "earlyWarningAlerts": {
+    "title": "Alertas tempranas",
+    "description": "Supervisa las condiciones de riesgo detectadas en los grupos de expedición activos.",
+    "activeCount": "{count} alertas activas",
+    "observedValue": "Valor observado",
+    "expectedValue": "Valor esperado",
+    "acknowledge": "Reconocer",
+    "resolve": "Resolver",
+    "dismissAsFalseAlarm": "Descartar como falsa alarma",
+    "noAlerts": "No hay alertas registradas",
+    "noAlertsDescription": "Los grupos de expedición no presentan condiciones de riesgo en este momento.",
+    "type": {
+      "delay": "Retraso en el tramo",
+      "vital-sign-anomaly": "Anomalía en signos vitales",
+      "route-deviation": "Desvío de ruta"
+    },
+    "priority": {
+      "low": "Prioridad baja",
+      "medium": "Prioridad media",
+      "high": "Prioridad alta"
+    },
+    "status": {
+      "active": "Activa",
+      "acknowledged": "Reconocida",
+      "resolved": "Resuelta",
+      "dismissed": "Descartada"
+    }
+  },
+  "operationsDashboard": {
+    "eyebrow": "Resumen operativo",
+    "title": "Panel de operaciones",
+    "description": "Un vistazo rápido al estado de tus rutas, grupos y alertas antes de entrar al detalle.",
+    "stats": {
+      "routes": "Rutas registradas",
+      "routesHint": "{enabled} habilitadas de {total}",
+      "groups": "Grupos de expedición",
+      "delayedGroups": "Grupos con retraso",
+      "activeAlerts": "Alertas activas"
+    },
+    "shortcuts": {
+      "routesTitle": "Rutas y puntos de control",
+      "routesDescription": "Configura rutas, checkpoints y ventanas de tiempo.",
+      "progressTitle": "Seguimiento de progreso",
+      "progressDescription": "Supervisa el avance estimado de los grupos activos.",
+      "alertsTitle": "Alertas tempranas",
+      "alertsDescription": "Revisa y actúa sobre las condiciones de riesgo detectadas."
+    },
+    "topAlertsTitle": "Alertas que requieren atención",
+    "topAlertsEmpty": "No hay alertas activas ni reconocidas en este momento.",
+    "viewAll": "Ver todas"
   }
 }

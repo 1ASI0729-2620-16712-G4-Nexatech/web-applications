@@ -156,5 +156,41 @@
       "status": "delayed",
       "riskLevel": "medium"
     }
+  ],
+  "early-warning-alerts": [
+    {
+      "id": 1,
+      "expeditionGroupId": 2,
+      "type": "delay",
+      "priority": "high",
+      "status": "resolved",
+      "triggeredAt": "2026-10-03T14:05:00",
+      "resolvedAt": "2026-10-05T22:40:48.367Z",
+      "riskEvidence": [
+        {
+          "metricType": "elapsed-time",
+          "observedValue": "95 min",
+          "expectedValue": "≤ 60 min",
+          "recordedAt": "2026-10-03T14:00:00"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "expeditionGroupId": 1,
+      "type": "route-deviation",
+      "priority": "low",
+      "status": "resolved",
+      "triggeredAt": "2026-10-02T11:00:00",
+      "resolvedAt": "2026-10-02T11:30:00",
+      "riskEvidence": [
+        {
+          "metricType": "route-position",
+          "observedValue": "180 m off corridor",
+          "expectedValue": "≤ 50 m",
+          "recordedAt": "2026-10-02T10:55:00"
+        }
+      ]
+    }
   ]
 }
