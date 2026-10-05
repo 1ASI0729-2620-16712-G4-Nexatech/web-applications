@@ -16,18 +16,18 @@ const setLocale = (newLocale) => {
 </script>
 
 <template>
-  <div class="language-switcher">
-    <label for="language-selector" class="sr-only">
-      {{ t('language.selector') }}
-    </label>
-
-    <pv-select
-        id="language-selector"
-        v-model="selectedLocale"
-        :options="languageOptions"
-        option-label="label"
-        option-value="value"
-        class="language-select"
+  <div class="language-switcher" role="group">
+    <pv-button
+      type="button"
+      label="ES"
+      :class="['lang-btn', { 'is-active': currentLocale === 'es' }]"
+      @click="setLocale('es')"
+    />
+    <pv-button
+      type="button"
+      label="EN"
+      :class="['lang-btn', { 'is-active': currentLocale === 'en' }]"
+      @click="setLocale('en')"
     />
   </div>
 </template>
