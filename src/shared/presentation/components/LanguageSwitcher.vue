@@ -33,28 +33,32 @@ const setLocale = (newLocale) => {
 </template>
 
 <style scoped>
-.language-select {
-  width: 8rem;
+.language-switcher {
+  display: inline-flex;
+  gap: 0.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem;
+  border-radius: 6px;
 }
 
-:deep(.p-select) {
-  min-height: 2.5rem;
-  border-color: rgba(255, 255, 255, 0.35);
-  background: transparent !important;
-  color: #ffffff !important;
+:deep(.lang-btn) {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-:deep(.p-select-label),
-:deep(.p-select-dropdown) {
-  color: #ffffff !important;
+:deep(.lang-btn:hover) {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+:deep(.lang-btn.is-active) {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 </style>
