@@ -16,16 +16,20 @@ const setLocale = (newLocale) => {
 </script>
 
 <template>
-  <div class="language-switcher" role="group">
+  <div class="language-switcher" role="group" aria-label="Language selection">
     <pv-button
       type="button"
       label="ES"
+      :aria-pressed="currentLocale === 'es'"
+      aria-label="Cambiar idioma a Español"
       :class="['lang-btn', { 'is-active': currentLocale === 'es' }]"
       @click="setLocale('es')"
     />
     <pv-button
       type="button"
       label="EN"
+      :aria-pressed="currentLocale === 'en'"
+      aria-label="Switch language to English"
       :class="['lang-btn', { 'is-active': currentLocale === 'en' }]"
       @click="setLocale('en')"
     />
