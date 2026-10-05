@@ -1,4 +1,9 @@
 <script setup>
+/**
+ * @component language-switcher
+ * @summary Toggles active application language between ES and EN.
+ * @author Ariel Roberto Mendoza Blanco - U202419667
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
