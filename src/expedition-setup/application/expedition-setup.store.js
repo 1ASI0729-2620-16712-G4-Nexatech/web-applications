@@ -5,11 +5,23 @@ import { Checkpoint } from '../domain/model/checkpoint.entity.js';
 import {
     ExpectedTimeWindow,
 } from '../domain/model/expected-time-window.entity.js';
+import { ExpeditionGroup } from '../domain/model/expedition-group.entity.js';
+import { FieldGuide } from '../domain/model/field-guide.entity.js';
+import { ManifestEntry } from '../domain/model/manifest-entry.entity.js';
 import { RouteAssembler } from '../infrastructure/route.assembler.js';
 import { CheckpointAssembler } from '../infrastructure/checkpoint.assembler.js';
 import {
     ExpectedTimeWindowAssembler,
 } from '../infrastructure/expected-time-window.assembler.js';
+import {
+    ExpeditionGroupAssembler,
+} from '../infrastructure/expedition-group.assembler.js';
+import {
+    FieldGuideAssembler,
+} from '../infrastructure/field-guide.assembler.js';
+import {
+    ManifestEntryAssembler,
+} from '../infrastructure/manifest-entry.assembler.js';
 import { ExpeditionSetupApi } from '../infrastructure/expedition-setup-api.js';
 
 const expeditionSetupApi = new ExpeditionSetupApi();
@@ -24,10 +36,16 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     const routes = ref([]);
     const checkpoints = ref([]);
     const expectedTimeWindows = ref([]);
+    const expeditionGroups = ref([]);
+    const fieldGuides = ref([]);
+    const manifestEntries = ref([]);
     const errors = ref([]);
     const routesLoaded = ref(false);
     const checkpointsLoaded = ref(false);
     const expectedTimeWindowsLoaded = ref(false);
+    const expeditionGroupsLoaded = ref(false);
+    const fieldGuidesLoaded = ref(false);
+    const manifestEntriesLoaded = ref(false);
 
     const routesCount = computed(() => (
         routesLoaded.value ? routes.value.length : 0
@@ -70,6 +88,49 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             .catch(() => {
                 errors.value.push(
                     createApplicationError('errors.expectedTimeWindowCreationFailed'),
+                );
+            });
+    }
+
+    function fetchExpeditionGroups() {
+        return expeditionSetupApi.getExpeditionGroups()
+            .then((response) => {
+                expeditionGroups.value = ExpeditionGroupAssembler
+                    .toEntitiesFromResponse(response);
+
+                expeditionGroupsLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expeditionGroupCreationFailed'),
+                );
+            });
+    }
+
+    function fetchFieldGuides() {
+        return expeditionSetupApi.getFieldGuides()
+            .then((response) => {
+                fieldGuides.value = FieldGuideAssembler.toEntitiesFromResponse(response);
+                fieldGuidesLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.fieldGuideAssignmentFailed'),
+                );
+            });
+    }
+
+    function fetchManifestEntries() {
+        return expeditionSetupApi.getManifestEntries()
+            .then((response) => {
+                manifestEntries.value = ManifestEntryAssembler
+                    .toEntitiesFromResponse(response);
+
+                manifestEntriesLoaded.value = true;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.manifestEntryCreationFailed'),
                 );
             });
     }
@@ -147,6 +208,92 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
 
     function hasValidTimeWindowLimits(minimumMinutes, maximumMinutes) {
         return maximumMinutes > minimumMinutes;
+    }
+
+    function getExpeditionGroupsByRouteId(routeId) {
+        return expeditionGroups.value.filter((expeditionGroup) => (
+            expeditionGroup.routeId === routeId
+        ));
+    }
+
+    function isRouteEnabledById(routeId) {
+        const route = routes.value.find(
+            (currentRoute) => currentRoute.id === routeId,
+        );
+
+        return route?.status === 'enabled';
+    }
+
+    function isDepartureDateInPast(departureDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return new Date(departureDate) < today;
+    }
+
+    function isFieldGuideDateConflicted(fieldGuideId, departureDate, excludeGroupId) {
+        return expeditionGroups.value.some((expeditionGroup) => (
+            expeditionGroup.id !== excludeGroupId
+            && expeditionGroup.fieldGuideId === fieldGuideId
+            && expeditionGroup.departureDate === departureDate
+        ));
+    }
+
+    function getManifestEntriesByGroupId(expeditionGroupId) {
+        return manifestEntries.value.filter((manifestEntry) => (
+            manifestEntry.expeditionGroupId === expeditionGroupId
+        ));
+    }
+
+    function isIdentityDocumentDuplicated(expeditionGroupId, identityDocument) {
+        const normalizedDocument = identityDocument.trim().toLocaleLowerCase();
+
+        return getManifestEntriesByGroupId(expeditionGroupId).some(
+            (manifestEntry) => (
+                manifestEntry.identityDocument.trim().toLocaleLowerCase()
+                === normalizedDocument
+            ),
+        );
+    }
+
+    function isIdentityDocumentRegisteredOnDate(
+        identityDocument,
+        departureDate,
+        excludeGroupId,
+    ) {
+        const normalizedDocument = identityDocument.trim().toLocaleLowerCase();
+
+        return manifestEntries.value.some((manifestEntry) => {
+            if (manifestEntry.expeditionGroupId === excludeGroupId) {
+                return false;
+            }
+
+            if (
+                manifestEntry.identityDocument.trim().toLocaleLowerCase()
+                !== normalizedDocument
+            ) {
+                return false;
+            }
+
+            const otherGroup = expeditionGroups.value.find(
+                (currentGroup) => currentGroup.id === manifestEntry.expeditionGroupId,
+            );
+
+            return otherGroup?.departureDate === departureDate;
+        });
+    }
+
+    function isGroupAtMaximumCapacity(expeditionGroupId) {
+        const expeditionGroup = expeditionGroups.value.find(
+            (currentGroup) => currentGroup.id === expeditionGroupId,
+        );
+
+        if (!expeditionGroup) {
+            return false;
+        }
+
+        return getManifestEntriesByGroupId(expeditionGroupId).length
+            >= expeditionGroup.maximumCapacity;
     }
 
     /**
@@ -263,6 +410,163 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     /**
+     * @param {ExpeditionGroup} expeditionGroup
+     * @returns {Promise<ExpeditionGroup|null>}
+     */
+    function addExpeditionGroup(expeditionGroup) {
+        if (!isRouteEnabledById(expeditionGroup.routeId)) {
+            errors.value.push(
+                createApplicationError('errors.routeNotEnabledForGroups'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        if (isDepartureDateInPast(expeditionGroup.departureDate)) {
+            errors.value.push(
+                createApplicationError('errors.expeditionGroupDepartureDateInPast'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        return expeditionSetupApi.createExpeditionGroup(expeditionGroup)
+            .then((response) => {
+                const newExpeditionGroup = ExpeditionGroupAssembler
+                    .toEntityFromResource(response.data);
+
+                expeditionGroups.value.push(newExpeditionGroup);
+                return newExpeditionGroup;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.expeditionGroupCreationFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
+     * @param {number} expeditionGroupId
+     * @param {number} fieldGuideId
+     * @param {boolean} [confirmConflict=false]
+     * @returns {Promise<ExpeditionGroup|{conflict: true}|null>}
+     */
+    function assignFieldGuide(expeditionGroupId, fieldGuideId, confirmConflict = false) {
+        const groupIndex = expeditionGroups.value.findIndex(
+            (expeditionGroup) => expeditionGroup.id === expeditionGroupId,
+        );
+
+        if (groupIndex === -1) {
+            errors.value.push(
+                createApplicationError('errors.fieldGuideAssignmentFailed'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        const currentGroup = expeditionGroups.value[groupIndex];
+
+        if (
+            !confirmConflict
+            && isFieldGuideDateConflicted(
+                fieldGuideId,
+                currentGroup.departureDate,
+                currentGroup.id,
+            )
+        ) {
+            return Promise.resolve({ conflict: true });
+        }
+
+        const groupToUpdate = new ExpeditionGroup({
+            ...currentGroup,
+            fieldGuideId,
+        });
+
+        return expeditionSetupApi.updateExpeditionGroup(
+            groupToUpdate.id,
+            groupToUpdate,
+        )
+            .then((response) => {
+                const updatedGroup = ExpeditionGroupAssembler
+                    .toEntityFromResource(response.data);
+
+                expeditionGroups.value[groupIndex] = updatedGroup;
+                return updatedGroup;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.fieldGuideAssignmentFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
+     * @param {ManifestEntry} manifestEntry
+     * @returns {Promise<ManifestEntry|null>}
+     */
+    function addManifestEntry(manifestEntry) {
+        if (
+            isIdentityDocumentDuplicated(
+                manifestEntry.expeditionGroupId,
+                manifestEntry.identityDocument,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryDocumentDuplicated'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        const currentGroup = expeditionGroups.value.find(
+            (group) => group.id === manifestEntry.expeditionGroupId,
+        );
+
+        if (
+            currentGroup
+            && isIdentityDocumentRegisteredOnDate(
+                manifestEntry.identityDocument,
+                currentGroup.departureDate,
+                manifestEntry.expeditionGroupId,
+            )
+        ) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryDateConflict'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        if (isGroupAtMaximumCapacity(manifestEntry.expeditionGroupId)) {
+            errors.value.push(
+                createApplicationError('errors.manifestEntryCapacityExceeded'),
+            );
+
+            return Promise.resolve(null);
+        }
+
+        return expeditionSetupApi.createManifestEntry(manifestEntry)
+            .then((response) => {
+                const newManifestEntry = ManifestEntryAssembler
+                    .toEntityFromResource(response.data);
+
+                manifestEntries.value.push(newManifestEntry);
+                return newManifestEntry;
+            })
+            .catch(() => {
+                errors.value.push(
+                    createApplicationError('errors.manifestEntryCreationFailed'),
+                );
+
+                return null;
+            });
+    }
+
+    /**
      * @param {number} routeId
      * @returns {Promise<Route|null>}
      */
@@ -315,22 +619,37 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         routes,
         checkpoints,
         expectedTimeWindows,
+        expeditionGroups,
+        fieldGuides,
+        manifestEntries,
         errors,
         routesLoaded,
         checkpointsLoaded,
         expectedTimeWindowsLoaded,
+        expeditionGroupsLoaded,
+        fieldGuidesLoaded,
+        manifestEntriesLoaded,
         routesCount,
         fetchRoutes,
         fetchCheckpoints,
         fetchExpectedTimeWindows,
+        fetchExpeditionGroups,
+        fetchFieldGuides,
+        fetchManifestEntries,
         getCheckpointsByRouteId,
         getExpectedTimeWindowsByRouteId,
+        getExpeditionGroupsByRouteId,
+        getManifestEntriesByGroupId,
         getRouteSegments,
         getPendingSegmentsByRouteId,
         routeHasCheckpoints,
+        isGroupAtMaximumCapacity,
         addRoute,
         addCheckpoint,
         addExpectedTimeWindow,
+        addExpeditionGroup,
+        assignFieldGuide,
+        addManifestEntry,
         enableRoute,
         clearErrors,
     };

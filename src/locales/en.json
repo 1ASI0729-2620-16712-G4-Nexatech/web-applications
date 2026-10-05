@@ -23,7 +23,10 @@
     "resetFilters": "Reset filters",
     "loading": "Loading routes...",
     "configureCheckpoints": "Configure checkpoints",
-    "configureTimeWindows": "Configure time windows"
+    "configureTimeWindows": "Configure time windows",
+    "manageGroups": "Manage groups",
+    "backToGroups": "Back to groups",
+    "progress": "Progress"
   },
   "routes": {
     "title": "Routes and checkpoints",
@@ -84,7 +87,13 @@
     "checkpointLocationRequired": "Checkpoint location is required.",
     "checkpointOrderInvalid": "Sequence order must be greater than zero.",
     "minimumTimeInvalid": "Minimum expected time must be zero or greater.",
-    "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time."
+    "maximumTimeInvalid": "Maximum expected time must be greater than minimum expected time.",
+    "expeditionGroupNameRequired": "Group name is required.",
+    "expeditionGroupDepartureDateRequired": "Departure date is required.",
+    "expeditionGroupCapacityInvalid": "Maximum capacity must be greater than zero.",
+    "fieldGuideRequired": "Select a field guide before assigning.",
+    "manifestFullNameRequired": "Full name is required.",
+    "manifestIdentityDocumentRequired": "Identity document is required."
   },
   "errors": {
     "routeCreationFailed": "The route could not be created.",
@@ -95,7 +104,16 @@
     "routeEnableFailed": "The route could not be enabled.",
     "expectedTimeWindowCreationFailed": "The expected time window could not be created.",
     "expectedTimeWindowLimitsInvalid": "Maximum expected time must be greater than minimum expected time.",
-    "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window."
+    "expectedTimeWindowAlreadyConfigured": "This route segment already has an expected time window.",
+    "expeditionGroupCreationFailed": "The expedition group could not be created.",
+    "routeNotEnabledForGroups": "The route must be enabled before creating expedition groups.",
+    "expeditionGroupDepartureDateInPast": "Departure date cannot be earlier than today.",
+    "fieldGuideAssignmentFailed": "The field guide could not be assigned.",
+    "manifestEntryCreationFailed": "The participant could not be registered.",
+    "manifestEntryDocumentDuplicated": "A participant with this identity document is already registered in this group.",
+    "manifestEntryDateConflict": "This identity document is already registered in another group departing on the same date.",
+    "manifestEntryCapacityExceeded": "This group has reached its maximum capacity.",
+    "groupProgressFetchFailed": "Progress data could not be loaded."
   },
 
   "checkpoints": {
@@ -128,5 +146,58 @@
     "noSegmentsDescription": "Add at least two checkpoints to define route segments.",
     "allConfigured": "All route segments are configured.",
     "pendingCount": "{count} pending segments"
+  },
+  "expeditionGroups": {
+    "title": "Expedition groups",
+    "description": "Create expedition groups for this route's upcoming departures.",
+    "name": "Group name",
+    "namePlaceholder": "e.g. Huayhuash October Group",
+    "departureDate": "Departure date",
+    "maximumCapacity": "Maximum capacity",
+    "addGroup": "Create group",
+    "registeredCount": "{count} registered groups",
+    "noGroups": "No expedition groups configured",
+    "noGroupsDescription": "Create the first expedition group for this route's departure.",
+    "routeNotEnabled": "This route must be enabled before creating expedition groups.",
+    "fieldGuide": "Field guide",
+    "fieldGuidePlaceholder": "Select a field guide",
+    "noFieldGuideAssigned": "No field guide assigned",
+    "assignFieldGuide": "Assign field guide",
+    "fieldGuideDateConflictWarning": "This field guide already has another group departing on the same date.",
+    "confirmAssignAnyway": "Assign anyway",
+    "viewManifest": "View manifest"
+  },
+  "manifest": {
+    "title": "Tourist manifest",
+    "description": "Register the tourists participating in this expedition group.",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "e.g. Ana Torres",
+    "identityDocument": "Identity document",
+    "identityDocumentPlaceholder": "e.g. 70451236",
+    "addEntry": "Register participant",
+    "registeredCount": "{count} / {capacity} registered participants",
+    "noEntries": "No participants registered",
+    "noEntriesDescription": "Register the first participant for this expedition group.",
+    "capacityReached": "This group has reached its maximum capacity."
+  },
+  "groupProgress": {
+    "title": "Group progress tracking",
+    "description": "Monitor the estimated progress of active expedition groups.",
+    "lastConfirmedCheckpoint": "Last confirmed checkpoint",
+    "currentSegment": "Current segment",
+    "estimatedProgress": "Estimated progress",
+    "synchronizedAt": "Last synchronized",
+    "status": {
+      "on-track": "On track",
+      "delayed": "Delayed"
+    },
+    "risk": {
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk"
+    },
+    "staleWarning": "No recent synchronization. Progress shown is an estimate.",
+    "tourNotActive": "Tracking is enabled once this group starts its tour.",
+    "noGroups": "No expedition groups found"
   }
 }

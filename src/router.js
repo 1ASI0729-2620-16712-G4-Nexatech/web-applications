@@ -14,6 +14,15 @@ const checkpointConfigurationView = () => import(
 const expectedTimeWindowConfigurationView = () => import(
     './expedition-setup/presentation/views/ExpectedTimeWindowConfigurationView.vue'
     );
+const expeditionGroupConfigurationView = () => import(
+    './expedition-setup/presentation/views/ExpeditionGroupConfigurationView.vue'
+    );
+const touristManifestView = () => import(
+    './expedition-setup/presentation/views/TouristManifestView.vue'
+    );
+const groupProgressDashboardView = () => import(
+    './field-tracking/presentation/views/GroupProgressDashboardView.vue'
+    );
 const routes = [
     {
         path: '/',
@@ -43,6 +52,24 @@ const routes = [
         name: 'route-expected-time-windows',
         component: expectedTimeWindowConfigurationView,
         meta: { title: 'Expected Time Windows' },
+    },
+    {
+        path: '/operations/routes/:routeId/groups',
+        name: 'route-groups',
+        component: expeditionGroupConfigurationView,
+        meta: { title: 'Expedition Groups' },
+    },
+    {
+        path: '/operations/routes/:routeId/groups/:groupId/manifest',
+        name: 'group-manifest',
+        component: touristManifestView,
+        meta: { title: 'Tourist Manifest' },
+    },
+    {
+        path: '/operations/progress',
+        name: 'group-progress-dashboard',
+        component: groupProgressDashboardView,
+        meta: { title: 'Group Progress' },
     },
 ];
 

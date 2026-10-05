@@ -23,7 +23,10 @@
     "resetFilters": "Restablecer filtros",
     "loading": "Cargando rutas...",
     "configureCheckpoints": "Configurar puntos de control",
-    "configureTimeWindows": "Configurar ventanas de tiempo"
+    "configureTimeWindows": "Configurar ventanas de tiempo",
+    "manageGroups": "Gestionar grupos",
+    "backToGroups": "Volver a grupos",
+    "progress": "Seguimiento"
   },
   "routes": {
     "title": "Rutas y puntos de control",
@@ -84,7 +87,13 @@
     "checkpointLocationRequired": "La ubicación del punto de control es obligatoria.",
     "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero.",
     "minimumTimeInvalid": "El tiempo mínimo esperado debe ser cero o mayor.",
-    "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo."
+    "maximumTimeInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
+    "expeditionGroupNameRequired": "El nombre del grupo es obligatorio.",
+    "expeditionGroupDepartureDateRequired": "La fecha de salida es obligatoria.",
+    "expeditionGroupCapacityInvalid": "La capacidad máxima debe ser mayor que cero.",
+    "fieldGuideRequired": "Selecciona un guía de campo antes de asignar.",
+    "manifestFullNameRequired": "El nombre completo es obligatorio.",
+    "manifestIdentityDocumentRequired": "El documento de identidad es obligatorio."
   },
   "errors": {
     "routeCreationFailed": "No se pudo crear la ruta.",
@@ -95,7 +104,16 @@
     "routeEnableFailed": "No se pudo habilitar la ruta.",
     "expectedTimeWindowCreationFailed": "No se pudo crear la ventana de tiempo esperada.",
     "expectedTimeWindowLimitsInvalid": "El tiempo máximo esperado debe ser mayor que el tiempo mínimo.",
-    "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada."
+    "expectedTimeWindowAlreadyConfigured": "Este tramo de ruta ya tiene una ventana de tiempo esperada.",
+    "expeditionGroupCreationFailed": "No se pudo crear el grupo de expedición.",
+    "routeNotEnabledForGroups": "La ruta debe estar habilitada antes de crear grupos de expedición.",
+    "expeditionGroupDepartureDateInPast": "La fecha de salida no puede ser anterior a hoy.",
+    "fieldGuideAssignmentFailed": "No se pudo asignar el guía de campo.",
+    "manifestEntryCreationFailed": "No se pudo registrar al participante.",
+    "manifestEntryDocumentDuplicated": "Ya hay un participante registrado con este documento de identidad en este grupo.",
+    "manifestEntryDateConflict": "Este documento de identidad ya está registrado en otro grupo con salida en la misma fecha.",
+    "manifestEntryCapacityExceeded": "Este grupo alcanzó su capacidad máxima.",
+    "groupProgressFetchFailed": "No se pudo cargar la información de seguimiento."
   },
 
   "checkpoints": {
@@ -128,5 +146,58 @@
     "noSegmentsDescription": "Agrega al menos dos puntos de control para definir tramos de ruta.",
     "allConfigured": "Todos los tramos de la ruta están configurados.",
     "pendingCount": "{count} tramos pendientes"
+  },
+  "expeditionGroups": {
+    "title": "Grupos de expedición",
+    "description": "Crea grupos de expedición para las próximas salidas de esta ruta.",
+    "name": "Nombre del grupo",
+    "namePlaceholder": "ej. Grupo Huayhuash Octubre",
+    "departureDate": "Fecha de salida",
+    "maximumCapacity": "Capacidad máxima",
+    "addGroup": "Crear grupo",
+    "registeredCount": "{count} grupos registrados",
+    "noGroups": "No hay grupos de expedición configurados",
+    "noGroupsDescription": "Crea el primer grupo de expedición para la salida de esta ruta.",
+    "routeNotEnabled": "Esta ruta debe estar habilitada antes de crear grupos de expedición.",
+    "fieldGuide": "Guía de campo",
+    "fieldGuidePlaceholder": "Selecciona un guía de campo",
+    "noFieldGuideAssigned": "Sin guía asignado",
+    "assignFieldGuide": "Asignar guía",
+    "fieldGuideDateConflictWarning": "Este guía ya tiene otro grupo con salida en la misma fecha.",
+    "confirmAssignAnyway": "Asignar de todas formas",
+    "viewManifest": "Ver manifiesto"
+  },
+  "manifest": {
+    "title": "Manifiesto de turistas",
+    "description": "Registra a los turistas que participan en este grupo de expedición.",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "ej. Ana Torres",
+    "identityDocument": "Documento de identidad",
+    "identityDocumentPlaceholder": "ej. 70451236",
+    "addEntry": "Registrar participante",
+    "registeredCount": "{count} / {capacity} participantes registrados",
+    "noEntries": "No hay participantes registrados",
+    "noEntriesDescription": "Registra el primer participante de este grupo de expedición.",
+    "capacityReached": "Este grupo alcanzó su capacidad máxima."
+  },
+  "groupProgress": {
+    "title": "Seguimiento de progreso de grupos",
+    "description": "Supervisa el progreso estimado de los grupos de expedición activos.",
+    "lastConfirmedCheckpoint": "Último checkpoint confirmado",
+    "currentSegment": "Tramo actual",
+    "estimatedProgress": "Progreso estimado",
+    "synchronizedAt": "Última sincronización",
+    "status": {
+      "on-track": "En curso",
+      "delayed": "Con retraso"
+    },
+    "risk": {
+      "low": "Riesgo bajo",
+      "medium": "Riesgo medio",
+      "high": "Riesgo alto"
+    },
+    "staleWarning": "Sin sincronización reciente. El progreso mostrado es una estimación.",
+    "tourNotActive": "El seguimiento se habilita al iniciar el recorrido de este grupo.",
+    "noGroups": "No se encontraron grupos de expedición"
   }
 }
