@@ -17,12 +17,6 @@ const isFieldGuide = computed(() => (
     props.workspace === 'field-guide'
 ));
 
-const workspaceSubtitle = computed(() => (
-    isFieldGuide.value
-        ? t('layout.fieldGuideDashboard')
-        : t('layout.dashboard')
-));
-
 const navigationTitle = computed(() => (
     isFieldGuide.value
         ? t('layout.fieldGuideNavigation')
@@ -71,14 +65,7 @@ const navigationItems = computed(() => {
   <div class="app-layout">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-logo-container">
-          <img :src="logoUrl" :alt="t('app.name')" class="brand-logo">
-        </div>
-
-        <div>
-          <strong>{{ t('app.name') }}</strong>
-          <small>{{ workspaceSubtitle }}</small>
-        </div>
+        <img :src="logoUrl" :alt="t('app.name')" class="brand-logo">
       </div>
 
       <div class="sidebar-divider" />
@@ -156,43 +143,15 @@ const navigationItems = computed(() => {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  justify-content: center;
   min-height: 6.625rem;
-  padding: 1.5rem 1.75rem;
-}
-
-.brand-logo-container {
-  display: grid;
-  width: 3rem;
-  height: 3rem;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 1.25rem 1.5rem;
 }
 
 .brand-logo {
-  width: 2.25rem;
-  height: 2.25rem;
+  max-width: 100%;
+  max-height: 4.125rem;
   object-fit: contain;
-}
-
-.brand strong,
-.brand small {
-  display: block;
-}
-
-.brand strong {
-  font-family: 'Sora', sans-serif;
-  font-size: 1.25rem;
-}
-
-.brand small {
-  margin-top: 0.2rem;
-  color: #b8d0c4;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
 .sidebar-divider {
@@ -352,6 +311,10 @@ const navigationItems = computed(() => {
   .brand {
     min-height: auto;
     padding: 1rem;
+  }
+
+  .brand-logo {
+    max-height: 3rem;
   }
 
   .navigation-title,
