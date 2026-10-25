@@ -72,6 +72,24 @@ createApp(App)
     .component('pv-toolbar',        Toolbar)
     .component('pv-toast',          Toast)
     .directive('tooltip',           Tooltip)
-    .use(router)
     .use(pinia)
+    .use(router)
     .mount('#app')
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {}));
+}
+
+// A previously visited preview must not cache source modules during development.
+if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+        const scriptUrl = new URL(`${import.meta.env.BASE_URL}sw.js`, location.origin).href;
+        const ours = registrations.filter((registration) => registration.active?.scriptURL === scriptUrl);
+        await Promise.all(ours.map((registration) => registration.unregister()));
+        if (ours.length) {
+            const keys = await caches.keys();
+            await Promise.all(keys.filter((key) => key.startsWith('vitaltrek-shell-')).map((key) => caches.delete(key)));
+            location.reload();
+        }
+    }).catch(() => {});
+}

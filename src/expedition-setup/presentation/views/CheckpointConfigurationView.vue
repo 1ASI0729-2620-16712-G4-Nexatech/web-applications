@@ -15,6 +15,9 @@ const routeId = Number(route.params.routeId);
 const form = reactive({
   location: '',
   sequenceOrder: null,
+  bluetoothId: '',
+  latitude: null,
+  longitude: null,
 });
 
 const fieldErrors = reactive({
@@ -63,6 +66,9 @@ function validateForm() {
 function resetForm() {
   form.location = '';
   form.sequenceOrder = null;
+  form.bluetoothId = '';
+  form.latitude = null;
+  form.longitude = null;
 }
 
 function submitForm() {
@@ -77,6 +83,9 @@ function submitForm() {
     routeId,
     location: form.location.trim(),
     sequenceOrder: form.sequenceOrder,
+    bluetoothId: form.bluetoothId.trim(),
+    latitude: form.latitude,
+    longitude: form.longitude,
   });
 
   store.addCheckpoint(checkpoint)
@@ -268,6 +277,9 @@ onMounted(() => {
             </small>
           </div>
 
+          <div class="form-field"><label for="checkpoint-bluetooth">{{ t('workflow.bluetoothId') }}</label><input id="checkpoint-bluetooth" v-model="form.bluetoothId" class="p-inputtext" required maxlength="80"></div>
+          <div class="form-field"><label for="checkpoint-latitude">{{ t('workflow.latitude') }}</label><input id="checkpoint-latitude" v-model.number="form.latitude" class="p-inputtext" type="number" required min="-90" max="90" step="any"></div>
+          <div class="form-field"><label for="checkpoint-longitude">{{ t('workflow.longitude') }}</label><input id="checkpoint-longitude" v-model.number="form.longitude" class="p-inputtext" type="number" required min="-180" max="180" step="any"></div>
           <p v-if="submissionErrorKey" class="request-error">
             {{ t(submissionErrorKey) }}
           </p>

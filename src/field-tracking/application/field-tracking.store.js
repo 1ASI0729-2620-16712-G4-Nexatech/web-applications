@@ -36,7 +36,7 @@ const useFieldTrackingStore = defineStore('fieldTracking', () => {
                 errors.value.push(
                     createApplicationError('errors.groupProgressFetchFailed'),
                 );
-            });
+            }).finally(() => { groupProgressRecordsLoaded.value = true; });
     }
 
     function getGroupProgressByGroupId(expeditionGroupId) {

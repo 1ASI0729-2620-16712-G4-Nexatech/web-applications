@@ -14,8 +14,8 @@ export class BaseEndpoint {
     }
 
     /** @returns {Promise<import('axios').AxiosResponse>} HTTP response with resource collection. */
-    getAll() {
-        return this.http.get(this.endpointPath);
+    getAll(params = {}) {
+        return this.http.get(this.endpointPath, { params });
     }
 
     /**
@@ -49,5 +49,9 @@ export class BaseEndpoint {
      */
     delete(id) {
         return this.http.delete(`${this.endpointPath}/${id}`);
+    }
+
+    patch(id, resource) {
+        return this.http.patch(`${this.endpointPath}/${id}`, resource);
     }
 }

@@ -1,0 +1,6 @@
+<script setup>
+import { useI18n } from 'vue-i18n';
+defineProps({ summary: { type: Object, required: true } });
+const { t } = useI18n();
+</script>
+<template><section class="vt-panel"><p class="vt-eyebrow">{{ t('workflow.summary') }}</p><h2>{{ summary.groupName }}</h2><p>{{ summary.routeName }}</p><div class="vt-stats"><div><strong>{{ summary.durationMinutes }}</strong><span>{{ t('workflow.minutes') }}</span></div><div><strong>{{ summary.distanceKm }} km</strong><span>{{ t('workflow.plannedDistance') }}</span></div><div><strong>{{ summary.checkpoints.length }}/{{ summary.totalCheckpoints }}</strong><span>{{ t('workflow.checkpoints') }}</span></div><div><strong>{{ summary.alertCount }}</strong><span>{{ t('workflow.alerts') }}</span></div><div><strong>{{ summary.incidentCount }}</strong><span>{{ t('workflow.incidents') }}</span></div></div><p>{{ new Date(summary.startedAt).toLocaleString() }} → {{ new Date(summary.finishedAt).toLocaleString() }}</p><p v-if="summary.incomplete" class="vt-notice">{{ t('workflow.incompleteSummary', { count: summary.pendingRecordCount }) }}</p><p v-if="summary.openIncidentCount" class="vt-notice">{{ t('workflow.openIncidentCount', { count: summary.openIncidentCount }) }}</p><ol><li v-for="checkpoint in summary.checkpoints" :key="checkpoint.id">{{ checkpoint.location }}</li></ol></section></template>

@@ -14,7 +14,9 @@ export class RiskEvidence {
                     observedValue = '',
                     expectedValue = '',
                     recordedAt = '',
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.metricType = metricType;
         this.observedValue = observedValue;
         this.expectedValue = expectedValue;
