@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import useIamStore from '../../../iam/application/iam.store.js';
 import { useI18n } from 'vue-i18n';
 import logoUrl from '../../../assets/vitaltrek-logo.png';
 import LanguageSwitcher from './LanguageSwitcher.vue';
@@ -12,19 +13,21 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const iam = useIamStore();
+function signOut() { iam.signOut(); window.location.assign('/sign-in'); }
 
 const isFieldGuide = computed(() => (
     props.workspace === 'field-guide'
 ));
 
 const navigationTitle = computed(() => (
-    isFieldGuide.value
+    props.workspace === 'tourist' ? t('tourist.myExpedition') : isFieldGuide.value
         ? t('layout.fieldGuideNavigation')
         : t('layout.navigation')
 ));
 
 const workspaceEnvironment = computed(() => (
-    isFieldGuide.value
+    props.workspace === 'tourist' ? t('tourist.environment') : isFieldGuide.value
         ? t('layout.fieldGuideEnvironment')
         : t('layout.routeSetupEnvironment')
 ));
@@ -36,6 +39,7 @@ const workspaceCommandBase = computed(() => (
 ));
 
 const navigationItems = computed(() => {
+  if (props.workspace === 'tourist') return [{ label: t('tourist.myExpedition'), icon: 'pi pi-compass', to: '/tourist/expedition' }];
   if (isFieldGuide.value) {
     return [
       {
@@ -47,6 +51,8 @@ const navigationItems = computed(() => {
   }
 
   return [
+    { label: t('workflow.expeditions'), icon: 'pi pi-users', to: '/operations/expeditions' },
+    { label: t('auth.accounts'), icon: 'pi pi-shield', to: '/operations/accounts' },
     {
       label: t('common.dashboard'),
       icon: 'pi pi-home',
@@ -90,7 +96,8 @@ const navigationItems = computed(() => {
             :key="item.to"
             :to="item.to"
             class="navigation-link"
-            active-class="navigation-link-active"
+            :active-class="item.to === '/operations' ? '' : 'navigation-link-active'"
+            exact-active-class="navigation-link-active"
         >
           <i :class="item.icon" aria-hidden="true" />
           <span>{{ item.label }}</span>
@@ -98,10 +105,7 @@ const navigationItems = computed(() => {
       </nav>
 
       <div class="sidebar-bottom">
-        <RouterLink to="/" class="workspace-switcher">
-          <i class="pi pi-arrow-left" />
-          <span>{{ t('layout.changeWorkspace') }}</span>
-        </RouterLink>
+        <p v-if="iam.user">{{ iam.user.name }}<br><small>{{ t(`roles.${iam.user.role}`) }}</small></p>
 
         <div class="connection-status">
           <span class="status-dot" />
@@ -122,7 +126,8 @@ const navigationItems = computed(() => {
         </div>
 
         <div class="topbar-actions">
-          <span class="topbar-section">{{ workspaceCommandBase }}</span>
+          <span v-if="iam.user" class="topbar-section">{{ t(`roles.${iam.user.role}`) }}</span>
+          <button class="vt-logout" @click="signOut">{{ t('auth.signOut') }}</button>
           <LanguageSwitcher />
         </div>
       </header>
@@ -137,7 +142,7 @@ const navigationItems = computed(() => {
 <style scoped>
 .app-layout {
   display: grid;
-  grid-template-columns: 19.125rem minmax(0, 1fr);
+  grid-template-columns: 17rem minmax(0, 1fr);
   min-height: 100vh;
   background: var(--vt-background);
 }
@@ -198,11 +203,11 @@ const navigationItems = computed(() => {
   display: flex;
   align-items: center;
   gap: 1rem;
-  min-height: 4.5rem;
+  min-height: 3.25rem;
   padding: 0.875rem 1rem;
   border-radius: 0.75rem;
   color: #d7e8df;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   text-decoration: none;
 }
@@ -330,6 +335,7 @@ const navigationItems = computed(() => {
 
   .brand {
     min-height: auto;
+    max-width: 260px;
     padding: 1rem;
   }
 
@@ -340,6 +346,7 @@ const navigationItems = computed(() => {
 
   .navigation {
     flex-direction: row;
+    flex-wrap: wrap;
     padding: 0 1rem 1rem;
   }
 

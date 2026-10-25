@@ -2,57 +2,173 @@
   "routes": [
     {
       "id": 1,
-      "name": "Huayhuash Alpine Circuit",
+      "name": "Cordillera Huayhuash Circuit",
       "origin": "Llamac, Áncash",
       "destination": "Llamac, Áncash",
       "distanceKm": 84.5,
       "elevationGainMeters": 5240,
       "difficulty": "Advanced",
       "estimatedDurationMinutes": 5760,
-      "status": "enabled"
+      "status": "enabled",
+      "agencyId": 1
     },
     {
       "id": 2,
-      "name": "Churin trekking",
-      "origin": "Entrance to Churín",
-      "destination": "Churin Mountain",
-      "distanceKm": 10,
-      "elevationGainMeters": 30,
+      "name": "Santa Cruz Trek",
+      "origin": "Vaquería, Áncash",
+      "destination": "Cashapampa, Áncash",
+      "distanceKm": 50,
+      "elevationGainMeters": 3350,
+      "difficulty": "Advanced",
+      "estimatedDurationMinutes": 2400,
+      "status": "enabled",
+      "agencyId": 1
+    },
+    {
+      "id": 3,
+      "name": "Marcahuasi Stone Forest Route",
+      "origin": "San Pedro de Casta, Lima",
+      "destination": "Monumento de la Humanidad, Lima",
+      "distanceKm": 14.2,
+      "elevationGainMeters": 780,
       "difficulty": "Intermediate",
-      "estimatedDurationMinutes": 360,
-      "status": "enabled"
+      "estimatedDurationMinutes": 480,
+      "status": "enabled",
+      "agencyId": 1
+    },
+    {
+      "id": 4,
+      "name": "Ausangate Rainbow Circuit",
+      "origin": "Tinki, Cusco",
+      "destination": "Vinicunca Viewpoint, Cusco",
+      "distanceKm": 22.6,
+      "elevationGainMeters": 1450,
+      "difficulty": "Expert",
+      "estimatedDurationMinutes": 960,
+      "status": "draft",
+      "agencyId": 1
     }
   ],
   "checkpoints": [
     {
       "id": 1,
       "routeId": 1,
-      "location": "Llamac",
-      "sequenceOrder": 1
+      "location": "Llamac Base Camp",
+      "sequenceOrder": 1,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-001",
+      "latitude": -9.475,
+      "longitude": -77.475
     },
     {
       "id": 2,
       "routeId": 1,
       "location": "Laguna Mituco",
-      "sequenceOrder": 2
+      "sequenceOrder": 2,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-002",
+      "latitude": -9.5,
+      "longitude": -77.45
     },
     {
       "id": 3,
       "routeId": 1,
       "location": "Paso Cacananpunta",
-      "sequenceOrder": 3
+      "sequenceOrder": 3,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-003",
+      "latitude": -9.525,
+      "longitude": -77.425
     },
     {
       "id": 4,
       "routeId": 1,
-      "location": "Llamac",
-      "sequenceOrder": 4
+      "location": "Jahuacocha Camp",
+      "sequenceOrder": 4,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-004",
+      "latitude": -9.55,
+      "longitude": -77.4
     },
     {
       "id": 5,
+      "routeId": 1,
+      "location": "Llamac Return Point",
+      "sequenceOrder": 5,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-005",
+      "latitude": -9.575,
+      "longitude": -77.375
+    },
+    {
+      "id": 6,
       "routeId": 2,
-      "location": "Pikitos restaurant",
-      "sequenceOrder": 1
+      "location": "Vaquería Trailhead",
+      "sequenceOrder": 1,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-006",
+      "latitude": -9.525,
+      "longitude": -77.475
+    },
+    {
+      "id": 7,
+      "routeId": 2,
+      "location": "Punta Unión Pass",
+      "sequenceOrder": 2,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-007",
+      "latitude": -9.55,
+      "longitude": -77.45
+    },
+    {
+      "id": 8,
+      "routeId": 2,
+      "location": "Llanganuco Camp",
+      "sequenceOrder": 3,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-008",
+      "latitude": -9.575,
+      "longitude": -77.425
+    },
+    {
+      "id": 9,
+      "routeId": 2,
+      "location": "Cashapampa Exit",
+      "sequenceOrder": 4,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-009",
+      "latitude": -9.6,
+      "longitude": -77.4
+    },
+    {
+      "id": 10,
+      "routeId": 3,
+      "location": "San Pedro de Casta",
+      "sequenceOrder": 1,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-010",
+      "latitude": -9.575,
+      "longitude": -77.475
+    },
+    {
+      "id": 11,
+      "routeId": 3,
+      "location": "Marcahuasi Amphitheater",
+      "sequenceOrder": 2,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-011",
+      "latitude": -9.6,
+      "longitude": -77.45
+    },
+    {
+      "id": 12,
+      "routeId": 3,
+      "location": "Monument of Humanity",
+      "sequenceOrder": 3,
+      "agencyId": 1,
+      "bluetoothId": "VT-CP-012",
+      "latitude": -9.625,
+      "longitude": -77.425
     }
   ],
   "expected-time-windows": [
@@ -61,134 +177,689 @@
       "routeId": 1,
       "fromCheckpointId": 1,
       "toCheckpointId": 2,
-      "minimumMinutes": 60,
-      "maximumMinutes": 120
+      "minimumMinutes": 420,
+      "maximumMinutes": 540,
+      "agencyId": 1
+    },
+    {
+      "id": 2,
+      "routeId": 1,
+      "fromCheckpointId": 2,
+      "toCheckpointId": 3,
+      "minimumMinutes": 480,
+      "maximumMinutes": 660,
+      "agencyId": 1
+    },
+    {
+      "id": 3,
+      "routeId": 1,
+      "fromCheckpointId": 3,
+      "toCheckpointId": 4,
+      "minimumMinutes": 540,
+      "maximumMinutes": 720,
+      "agencyId": 1
+    },
+    {
+      "id": 4,
+      "routeId": 1,
+      "fromCheckpointId": 4,
+      "toCheckpointId": 5,
+      "minimumMinutes": 480,
+      "maximumMinutes": 600,
+      "agencyId": 1
+    },
+    {
+      "id": 5,
+      "routeId": 2,
+      "fromCheckpointId": 6,
+      "toCheckpointId": 7,
+      "minimumMinutes": 420,
+      "maximumMinutes": 540,
+      "agencyId": 1
+    },
+    {
+      "id": 6,
+      "routeId": 2,
+      "fromCheckpointId": 7,
+      "toCheckpointId": 8,
+      "minimumMinutes": 360,
+      "maximumMinutes": 480,
+      "agencyId": 1
+    },
+    {
+      "id": 7,
+      "routeId": 2,
+      "fromCheckpointId": 8,
+      "toCheckpointId": 9,
+      "minimumMinutes": 360,
+      "maximumMinutes": 480,
+      "agencyId": 1
+    },
+    {
+      "id": 8,
+      "routeId": 3,
+      "fromCheckpointId": 10,
+      "toCheckpointId": 11,
+      "minimumMinutes": 180,
+      "maximumMinutes": 240,
+      "agencyId": 1
+    },
+    {
+      "id": 9,
+      "routeId": 3,
+      "fromCheckpointId": 11,
+      "toCheckpointId": 12,
+      "minimumMinutes": 120,
+      "maximumMinutes": 180,
+      "agencyId": 1
+    }
+  ],
+  "field-guides": [
+    {
+      "id": 1,
+      "name": "Elena Vargas",
+      "agencyId": 1
+    },
+    {
+      "id": 2,
+      "name": "Diego Huamán",
+      "agencyId": 1
+    },
+    {
+      "id": 3,
+      "name": "Lucía Paredes",
+      "agencyId": 1
+    },
+    {
+      "id": 4,
+      "name": "Mateo Salazar",
+      "agencyId": 1
     }
   ],
   "expedition-groups": [
     {
       "id": 1,
       "routeId": 1,
-      "name": "los wawitas",
-      "departureDate": "2026-10-05",
-      "maximumCapacity": 15,
-      "fieldGuideId": 2
+      "name": "Huayhuash Summit Team",
+      "departureDate": "2026-10-25",
+      "maximumCapacity": 12,
+      "fieldGuideId": 1,
+      "agencyId": 1,
+      "status": "scheduled"
     },
     {
       "id": 2,
       "routeId": 2,
-      "name": "los dibujitos",
-      "departureDate": "2026-10-06",
-      "maximumCapacity": 20,
-      "fieldGuideId": 2
+      "name": "Santa Cruz Glacier Team",
+      "departureDate": "2026-10-25",
+      "maximumCapacity": 10,
+      "fieldGuideId": 2,
+      "agencyId": 1,
+      "status": "active",
+      "startedAt": "2026-10-25T08:00:00-05:00"
     },
     {
       "id": 3,
-      "routeId": 2,
-      "name": "upas",
-      "departureDate": "2026-10-05",
-      "maximumCapacity": 12,
-      "fieldGuideId": 3
+      "routeId": 3,
+      "name": "Marcahuasi Weekend Group",
+      "departureDate": "2026-11-03",
+      "maximumCapacity": 14,
+      "fieldGuideId": 3,
+      "agencyId": 1,
+      "status": "scheduled"
     },
     {
       "id": 4,
       "routeId": 1,
-      "name": "akipus",
-      "departureDate": "2026-10-06",
-      "maximumCapacity": 3,
-      "fieldGuideId": null
-    }
-  ],
-  "field-guides": [
-    {
-      "id": 1,
-      "name": "Mateo Rios"
+      "name": "Huayhuash Acclimatization Group",
+      "departureDate": "2026-11-04",
+      "maximumCapacity": 8,
+      "fieldGuideId": 4,
+      "agencyId": 1,
+      "status": "scheduled"
     },
     {
-      "id": 2,
-      "name": "Lucía Fernández"
-    },
-    {
-      "id": 3,
-      "name": "Carlos Quispe"
+      "id": 5,
+      "routeId": 2,
+      "name": "Santa Cruz Orientation Group",
+      "departureDate": "2026-11-05",
+      "maximumCapacity": 10,
+      "fieldGuideId": null,
+      "agencyId": 1,
+      "status": "scheduled"
     }
   ],
   "manifest-entries": [
     {
       "id": 1,
       "expeditionGroupId": 1,
-      "fullName": "Miler Rodriguez",
-      "identityDocument": "75920355"
+      "fullName": "Valeria Torres",
+      "identityDocument": "70010001",
+      "agencyId": 1
     },
     {
       "id": 2,
-      "expeditionGroupId": 3,
-      "fullName": "Miler Rodriguez",
-      "identityDocument": "75920355"
+      "expeditionGroupId": 1,
+      "fullName": "Andrés Medina",
+      "identityDocument": "70010002",
+      "agencyId": 1
     },
     {
       "id": 3,
+      "expeditionGroupId": 1,
+      "fullName": "Camila Rojas",
+      "identityDocument": "70010003",
+      "agencyId": 1
+    },
+    {
+      "id": 4,
+      "expeditionGroupId": 1,
+      "fullName": "Sofía Herrera",
+      "identityDocument": "70010004",
+      "agencyId": 1
+    },
+    {
+      "id": 5,
+      "expeditionGroupId": 1,
+      "fullName": "Bruno Castillo",
+      "identityDocument": "70010005",
+      "agencyId": 1
+    },
+    {
+      "id": 6,
+      "expeditionGroupId": 2,
+      "fullName": "Mariana Flores",
+      "identityDocument": "70020001",
+      "agencyId": 1
+    },
+    {
+      "id": 7,
+      "expeditionGroupId": 2,
+      "fullName": "Joaquín Ramos",
+      "identityDocument": "70020002",
+      "agencyId": 1
+    },
+    {
+      "id": 8,
+      "expeditionGroupId": 2,
+      "fullName": "Renata Silva",
+      "identityDocument": "70020003",
+      "agencyId": 1
+    },
+    {
+      "id": 9,
+      "expeditionGroupId": 2,
+      "fullName": "Pablo Núñez",
+      "identityDocument": "70020004",
+      "agencyId": 1
+    },
+    {
+      "id": 10,
+      "expeditionGroupId": 3,
+      "fullName": "Daniela Cruz",
+      "identityDocument": "70030001",
+      "agencyId": 1
+    },
+    {
+      "id": 11,
+      "expeditionGroupId": 3,
+      "fullName": "Martín Vega",
+      "identityDocument": "70030002",
+      "agencyId": 1
+    },
+    {
+      "id": 12,
+      "expeditionGroupId": 3,
+      "fullName": "Ariana Castro",
+      "identityDocument": "70030003",
+      "agencyId": 1
+    },
+    {
+      "id": 13,
       "expeditionGroupId": 4,
-      "fullName": "Mateo Leon",
-      "identityDocument": "12345678"
+      "fullName": "Gabriel Soto",
+      "identityDocument": "70040001",
+      "agencyId": 1
+    },
+    {
+      "id": 14,
+      "expeditionGroupId": 4,
+      "fullName": "Elisa Navarro",
+      "identityDocument": "70040002",
+      "agencyId": 1
     }
   ],
   "group-progress": [
     {
+      "id": 2,
+      "expeditionGroupId": 2,
+      "lastConfirmedCheckpointLabel": "Punta Unión Pass",
+      "currentSegmentLabel": "Punta Unión Pass → Llanganuco Camp",
+      "estimatedProgressPercentage": 57,
+      "recordedAt": "2026-10-25T08:10:00-05:00",
+      "synchronizedAt": "2026-10-25T08:15:00-05:00",
+      "status": "delayed",
+      "riskLevel": "medium",
+      "agencyId": 1
+    }
+  ],
+  "agencies": [
+    {
       "id": 1,
-      "expeditionGroupId": 1,
-      "lastConfirmedCheckpointLabel": "Laguna Mituco",
-      "currentSegmentLabel": "Laguna Mituco → Paso Cacananpunta",
-      "estimatedProgressPercentage": 45,
-      "recordedAt": "2026-10-04T09:15:00",
-      "synchronizedAt": "2026-10-04T09:15:00",
-      "status": "on-track",
-      "riskLevel": "low"
+      "name": "VitalTrek Adventure Agency"
     },
     {
       "id": 2,
+      "name": "Independent Demo Agency"
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "agencyId": 1,
+      "name": "Operations Administrator",
+      "username": "admin@vitaltrek.demo",
+      "password": "VitalTrek123!",
+      "role": "operations_administrator"
+    },
+    {
+      "id": 2,
+      "agencyId": 1,
+      "name": "Elena Vargas",
+      "username": "guide@vitaltrek.demo",
+      "password": "VitalTrek123!",
+      "role": "field_guide",
+      "fieldGuideId": 1
+    },
+    {
+      "id": 3,
+      "agencyId": 1,
+      "name": "Valeria Torres",
+      "username": "tourist@vitaltrek.demo",
+      "password": "VitalTrek123!",
+      "role": "adventure_tourist",
+      "identityDocument": "70010001"
+    },
+    {
+      "id": 4,
+      "agencyId": 1,
+      "name": "Diego Huamán",
+      "username": "guide2@vitaltrek.demo",
+      "password": "VitalTrek123!",
+      "role": "field_guide",
+      "fieldGuideId": 2
+    },
+    {
+      "id": 5,
+      "agencyId": 2,
+      "name": "Other Agency Administrator",
+      "username": "other@vitaltrek.demo",
+      "password": "VitalTrek123!",
+      "role": "operations_administrator"
+    }
+  ],
+  "wearable-devices": [
+    {
+      "id": 1,
+      "agencyId": 1,
+      "code": "VT-W-001",
+      "status": "assigned"
+    },
+    {
+      "id": 2,
+      "agencyId": 1,
+      "code": "VT-W-002",
+      "status": "assigned"
+    },
+    {
+      "id": 3,
+      "agencyId": 1,
+      "code": "VT-W-003",
+      "status": "assigned"
+    },
+    {
+      "id": 4,
+      "agencyId": 1,
+      "code": "VT-W-004",
+      "status": "assigned"
+    },
+    {
+      "id": 5,
+      "agencyId": 1,
+      "code": "VT-W-005",
+      "status": "assigned"
+    },
+    {
+      "id": 6,
+      "agencyId": 1,
+      "code": "VT-W-006",
+      "status": "assigned"
+    },
+    {
+      "id": 7,
+      "agencyId": 1,
+      "code": "VT-W-007",
+      "status": "assigned"
+    },
+    {
+      "id": 8,
+      "agencyId": 1,
+      "code": "VT-W-008",
+      "status": "assigned"
+    },
+    {
+      "id": 9,
+      "agencyId": 1,
+      "code": "VT-W-009",
+      "status": "assigned"
+    },
+    {
+      "id": 10,
+      "agencyId": 1,
+      "code": "VT-W-010",
+      "status": "available"
+    },
+    {
+      "id": 11,
+      "agencyId": 1,
+      "code": "VT-W-011",
+      "status": "available"
+    },
+    {
+      "id": 12,
+      "agencyId": 1,
+      "code": "VT-W-012",
+      "status": "available"
+    },
+    {
+      "id": 13,
+      "agencyId": 1,
+      "code": "VT-W-013",
+      "status": "available"
+    },
+    {
+      "id": 14,
+      "agencyId": 1,
+      "code": "VT-W-014",
+      "status": "available"
+    },
+    {
+      "id": 15,
+      "agencyId": 1,
+      "code": "VT-W-015",
+      "status": "available"
+    },
+    {
+      "id": 16,
+      "agencyId": 1,
+      "code": "VT-W-016",
+      "status": "available"
+    },
+    {
+      "id": 17,
+      "agencyId": 1,
+      "code": "VT-W-017",
+      "status": "available"
+    },
+    {
+      "id": 18,
+      "agencyId": 1,
+      "code": "VT-W-018",
+      "status": "available"
+    },
+    {
+      "id": 19,
+      "agencyId": 1,
+      "code": "VT-W-019",
+      "status": "available"
+    },
+    {
+      "id": 20,
+      "agencyId": 1,
+      "code": "VT-W-020",
+      "status": "available"
+    }
+  ],
+  "participant-preparations": [
+    {
+      "id": 1,
+      "agencyId": 1,
+      "expeditionGroupId": 1,
+      "memberId": 1,
+      "wearableId": 1,
+      "consent": false,
+      "activated": false,
+      "emergencyContact": {},
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 2,
+      "agencyId": 1,
+      "expeditionGroupId": 1,
+      "memberId": 2,
+      "wearableId": 2,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 3,
+      "agencyId": 1,
+      "expeditionGroupId": 1,
+      "memberId": 3,
+      "wearableId": 3,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 4,
+      "agencyId": 1,
+      "expeditionGroupId": 1,
+      "memberId": 4,
+      "wearableId": 4,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 5,
+      "agencyId": 1,
+      "expeditionGroupId": 1,
+      "memberId": 5,
+      "wearableId": 5,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 6,
+      "agencyId": 1,
       "expeditionGroupId": 2,
-      "lastConfirmedCheckpointLabel": "Pikitos restaurant",
-      "currentSegmentLabel": "Pikitos restaurant → Churin Mountain",
-      "estimatedProgressPercentage": 20,
-      "recordedAt": "2026-10-03T14:00:00",
-      "synchronizedAt": "2026-10-03T14:00:00",
-      "status": "delayed",
-      "riskLevel": "medium"
+      "memberId": 6,
+      "wearableId": 6,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 7,
+      "agencyId": 1,
+      "expeditionGroupId": 2,
+      "memberId": 7,
+      "wearableId": 7,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 8,
+      "agencyId": 1,
+      "expeditionGroupId": 2,
+      "memberId": 8,
+      "wearableId": 8,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    },
+    {
+      "id": 9,
+      "agencyId": 1,
+      "expeditionGroupId": 2,
+      "memberId": 9,
+      "wearableId": 9,
+      "consent": true,
+      "activated": true,
+      "emergencyContact": {
+        "name": "Demo Emergency Contact",
+        "phone": "+51 900 000 000",
+        "relationship": "Family"
+      },
+      "baselineMin": 50,
+      "baselineMax": 140
+    }
+  ],
+  "route-notes": [
+    {
+      "id": 1,
+      "agencyId": 1,
+      "routeId": 1,
+      "title": "Cordillera Huayhuash Circuit",
+      "content": "Demonstration route. Follow the assigned guide. Carry water and warm clothing; check conditions before departure. Coordinates are fictitious and must not be used for real navigation.",
+      "displayOrder": 1
+    },
+    {
+      "id": 2,
+      "agencyId": 1,
+      "routeId": 2,
+      "title": "Santa Cruz Trek",
+      "content": "Demonstration route. Follow the assigned guide. Carry water and warm clothing; check conditions before departure. Coordinates are fictitious and must not be used for real navigation.",
+      "displayOrder": 1
+    },
+    {
+      "id": 3,
+      "agencyId": 1,
+      "routeId": 3,
+      "title": "Marcahuasi Stone Forest Route",
+      "content": "Demonstration route. Follow the assigned guide. Carry water and warm clothing; check conditions before departure. Coordinates are fictitious and must not be used for real navigation.",
+      "displayOrder": 1
+    },
+    {
+      "id": 4,
+      "agencyId": 1,
+      "routeId": 4,
+      "title": "Ausangate Rainbow Circuit",
+      "content": "Demonstration route. Follow the assigned guide. Carry water and warm clothing; check conditions before departure. Coordinates are fictitious and must not be used for real navigation.",
+      "displayOrder": 1
+    }
+  ],
+  "safety-protocols": [
+    {
+      "id": 1,
+      "agencyId": 1,
+      "routeId": 1,
+      "status": "active",
+      "instructions": "Demonstration protocol: verify the alert in the field, document the situation, confirm or dismiss the incident. Operations records emergency coordination when needed. No real messages are sent."
+    },
+    {
+      "id": 2,
+      "agencyId": 1,
+      "routeId": 2,
+      "status": "active",
+      "instructions": "Demonstration protocol: verify the alert in the field, document the situation, confirm or dismiss the incident. Operations records emergency coordination when needed. No real messages are sent."
+    },
+    {
+      "id": 3,
+      "agencyId": 1,
+      "routeId": 3,
+      "status": "active",
+      "instructions": "Demonstration protocol: verify the alert in the field, document the situation, confirm or dismiss the incident. Operations records emergency coordination when needed. No real messages are sent."
+    },
+    {
+      "id": 4,
+      "agencyId": 1,
+      "routeId": 4,
+      "status": "active",
+      "instructions": "Demonstration protocol: verify the alert in the field, document the situation, confirm or dismiss the incident. Operations records emergency coordination when needed. No real messages are sent."
+    }
+  ],
+  "sync-batches": [],
+  "telemetry-records": [],
+  "incidents": [],
+  "notifications": [],
+  "evacuation-actions": [],
+  "rescue-coordinations": [],
+  "tour-closures": [],
+  "tour-summaries": [],
+  "check-ins": [
+    {
+      "id": "demo-checkin-2",
+      "agencyId": 1,
+      "expeditionGroupId": 2,
+      "checkpointId": 6,
+      "kind": "check-in",
+      "recordedAt": "2026-10-25T08:10:00-05:00",
+      "synchronizedAt": "2026-10-25T08:15:00-05:00"
     }
   ],
   "early-warning-alerts": [
     {
       "id": 1,
+      "agencyId": 1,
       "expeditionGroupId": 2,
-      "type": "delay",
+      "type": "vital-sign-anomaly",
       "priority": "high",
-      "status": "resolved",
-      "triggeredAt": "2026-10-03T14:05:00",
-      "resolvedAt": "2026-10-05T22:40:48.367Z",
+      "status": "active",
+      "triggeredAt": "2026-10-25T08:15:00-05:00",
       "riskEvidence": [
         {
-          "metricType": "elapsed-time",
-          "observedValue": "95 min",
-          "expectedValue": "≤ 60 min",
-          "recordedAt": "2026-10-03T14:00:00"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "expeditionGroupId": 1,
-      "type": "route-deviation",
-      "priority": "low",
-      "status": "resolved",
-      "triggeredAt": "2026-10-02T11:00:00",
-      "resolvedAt": "2026-10-02T11:30:00",
-      "riskEvidence": [
-        {
-          "metricType": "route-position",
-          "observedValue": "180 m off corridor",
-          "expectedValue": "≤ 50 m",
-          "recordedAt": "2026-10-02T10:55:00"
+          "metricType": "heart-rate",
+          "observedValue": "160 bpm (simulated)",
+          "expectedValue": "50–140 bpm (demo)",
+          "recordedAt": "2026-10-25T08:10:00-05:00"
         }
       ]
     }

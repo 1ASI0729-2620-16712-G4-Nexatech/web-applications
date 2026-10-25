@@ -18,7 +18,9 @@ export class ExpectedTimeWindow {
                     toCheckpointId = null,
                     minimumMinutes = null,
                     maximumMinutes = null,
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.routeId = routeId;
         this.fromCheckpointId = fromCheckpointId;

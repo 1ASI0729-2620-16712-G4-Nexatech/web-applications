@@ -7,7 +7,9 @@ export class FieldGuide {
      * @param {?number} [params.id=null] - Field Guide identifier.
      * @param {string} [params.name=''] - Field Guide full name.
      */
-    constructor({ id = null, name = '' } = {}) {
+    constructor({ id = null, name = '', ...metadata
+                } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.name = name;
     }

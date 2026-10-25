@@ -18,12 +18,16 @@ export class ExpeditionGroup {
                     departureDate = '',
                     maximumCapacity = null,
                     fieldGuideId = null,
+                    status = 'scheduled',
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.routeId = routeId;
         this.name = name;
         this.departureDate = departureDate;
         this.maximumCapacity = maximumCapacity;
         this.fieldGuideId = fieldGuideId;
+        this.status = status;
     }
 }

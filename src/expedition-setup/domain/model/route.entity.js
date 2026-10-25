@@ -24,7 +24,9 @@ export class Route {
                     difficulty = '',
                     estimatedDurationMinutes = null,
                     status = 'draft',
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.name = name;
         this.origin = origin;

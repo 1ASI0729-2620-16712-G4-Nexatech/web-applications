@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs",
+    "api:demo": "node server/demo-api.mjs",
+    "api:reset": "node server/reset-demo.mjs",
     "api": "json-server --watch server/db.json --routes server/routes.json --port 3000"
   },
   "dependencies": {

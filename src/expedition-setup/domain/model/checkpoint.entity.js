@@ -14,7 +14,9 @@ export class Checkpoint {
                     routeId = null,
                     location = '',
                     sequenceOrder = null,
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.routeId = routeId;
         this.location = location;

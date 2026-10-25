@@ -5,10 +5,14 @@ import {
     EarlyWarningAlertAssembler,
 } from '../infrastructure/early-warning-alert.assembler.js';
 import { SafetyMonitoringApi } from '../infrastructure/safety-monitoring-api.js';
+import { evaluateSafety } from '../domain/model/safety-evaluation.js';
+import useIamStore from '../../iam/application/iam.store.js';
+import { Roles, canAccessGroup } from '../../iam/domain/user.entity.js';
+import { requireCondition } from '../../shared/domain/application-error.js';
 
 const safetyMonitoringApi = new SafetyMonitoringApi();
 
-const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
+const PRIORITY_RANK = { critical: 4, high: 3, medium: 2, low: 1 };
 
 function createApplicationError(code) {
     const error = new Error(code);
@@ -41,7 +45,7 @@ const useSafetyMonitoringStore = defineStore('safetyMonitoring', () => {
                 errors.value.push(
                     createApplicationError('errors.earlyWarningAlertsFetchFailed'),
                 );
-            });
+            }).finally(() => { earlyWarningAlertsLoaded.value = true; });
     }
 
     function getEarlyWarningAlertsByGroupId(expeditionGroupId) {
@@ -91,11 +95,12 @@ const useSafetyMonitoringStore = defineStore('safetyMonitoring', () => {
             alertToUpdate.id,
             alertToUpdate,
         )
-            .then((response) => {
+            .then(async (response) => {
                 const updatedAlert = EarlyWarningAlertAssembler
                     .toEntityFromResource(response.data);
 
                 earlyWarningAlerts.value[alertIndex] = updatedAlert;
+                await updateProgressRisk(updatedAlert.expeditionGroupId);
                 return updatedAlert;
             })
             .catch(() => {
@@ -135,6 +140,25 @@ const useSafetyMonitoringStore = defineStore('safetyMonitoring', () => {
         errors.value = [];
     }
 
+    async function evaluate(group, telemetry, arrivals, segments, preparations) {
+        const iam = useIamStore();
+        requireCondition(iam.user?.role !== Roles.TOURIST && canAccessGroup(iam.user, group), 'workflow.errors.forbidden');
+        requireCondition(group.status === 'active', 'workflow.errors.notActive');
+        await fetchEarlyWarningAlerts();
+        for (const result of evaluateSafety(group, telemetry, arrivals, segments, preparations)) {
+            if (earlyWarningAlerts.value.some((alert) => alert.expeditionGroupId === group.id && alert.evaluationKey === result.key && isAlertActionable(alert.status))) continue;
+            const response = await safetyMonitoringApi.createEarlyWarningAlert(new EarlyWarningAlert({ ...result, evaluationKey: result.key, expeditionGroupId: group.id, triggeredAt: new Date().toISOString(), status: 'active' }));
+            earlyWarningAlerts.value.push(EarlyWarningAlertAssembler.toEntityFromResource(response.data));
+        }
+        await updateProgressRisk(group.id);
+    }
+
+    async function updateProgressRisk(groupId) {
+        const actionable = getEarlyWarningAlertsByGroupId(groupId).filter((a) => isAlertActionable(a.status));
+        const highest = actionable[0]?.priority ?? 'low';
+        await safetyMonitoringApi.updateProgressRisk(groupId, highest === 'critical' ? 'high' : highest, actionable.some((a) => a.type === 'delay') ? 'delayed' : 'on-track');
+    }
+
     return {
         earlyWarningAlerts,
         errors,
@@ -147,6 +171,7 @@ const useSafetyMonitoringStore = defineStore('safetyMonitoring', () => {
         resolveAlert,
         dismissAlertAsFalseAlarm,
         clearErrors,
+        evaluate,
     };
 });
 

@@ -1,7 +1,7 @@
 import { BaseApi } from '../../shared/infrastructure/base-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
-const groupProgressEndpointPath = import.meta.env.VITE_GROUP_PROGRESS_ENDPOINT_PATH;
+const groupProgressEndpointPath = import.meta.env.VITE_GROUP_PROGRESS_ENDPOINT_PATH || '/group-progress';
 
 /**
  * API gateway for the Field Tracking bounded context.

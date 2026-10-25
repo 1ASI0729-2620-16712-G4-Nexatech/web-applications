@@ -24,7 +24,9 @@ export class GroupProgress {
                     synchronizedAt = '',
                     status = '',
                     riskLevel = '',
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.expeditionGroupId = expeditionGroupId;
         this.lastConfirmedCheckpointLabel = lastConfirmedCheckpointLabel;
