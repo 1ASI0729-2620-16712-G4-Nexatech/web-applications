@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Route } from '../../domain/model/route.entity.js';
@@ -8,6 +8,7 @@ import useExpeditionSetupStore from '../../application/expedition-setup.store.js
 const router = useRouter();
 const { t } = useI18n();
 const store = useExpeditionSetupStore();
+onMounted(() => store.fetchRoutes());
 
 const form = reactive({
   name: '',

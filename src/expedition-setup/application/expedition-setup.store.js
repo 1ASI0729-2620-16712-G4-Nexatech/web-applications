@@ -1,3 +1,6 @@
+import useIamStore from '../../iam/application/iam.store.js';
+import { Roles, canAccessGroup } from '../../iam/domain/user.entity.js';
+import { isPastDate } from '../../shared/domain/calendar-date.js';
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { Route } from '../domain/model/route.entity.js';
@@ -61,7 +64,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.routeCreationFailed'),
                 );
-            });
+            }).finally(() => { routesLoaded.value = true; });
     }
 
     function fetchCheckpoints() {
@@ -74,7 +77,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.checkpointCreationFailed'),
                 );
-            });
+            }).finally(() => { checkpointsLoaded.value = true; });
     }
 
     function fetchExpectedTimeWindows() {
@@ -89,7 +92,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.expectedTimeWindowCreationFailed'),
                 );
-            });
+            }).finally(() => { expectedTimeWindowsLoaded.value = true; });
     }
 
     function fetchExpeditionGroups() {
@@ -104,7 +107,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.expeditionGroupCreationFailed'),
                 );
-            });
+            }).finally(() => { expeditionGroupsLoaded.value = true; });
     }
 
     function fetchFieldGuides() {
@@ -117,7 +120,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.fieldGuideAssignmentFailed'),
                 );
-            });
+            }).finally(() => { fieldGuidesLoaded.value = true; });
     }
 
     function fetchManifestEntries() {
@@ -132,7 +135,15 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
                 errors.value.push(
                     createApplicationError('errors.manifestEntryCreationFailed'),
                 );
-            });
+            }).finally(() => { manifestEntriesLoaded.value = true; });
+    }
+
+    function authorizeMutation(groupId = null) {
+        const iam = useIamStore();
+        const group = expeditionGroups.value.find((item) => item.id === groupId);
+        const allowed = groupId === null ? iam.isAdmin : canAccessGroup(iam.user, group) && iam.user.role !== Roles.TOURIST && group.status === 'scheduled';
+        if (!allowed) errors.value.push(createApplicationError('workflow.errors.forbidden'));
+        return allowed;
     }
 
     function isRouteNameDuplicated(name) {
@@ -207,7 +218,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     function hasValidTimeWindowLimits(minimumMinutes, maximumMinutes) {
-        return maximumMinutes > minimumMinutes;
+        return Number.isFinite(minimumMinutes) && minimumMinutes >= 0 && Number.isFinite(maximumMinutes) && maximumMinutes > minimumMinutes;
     }
 
     function getExpeditionGroupsByRouteId(routeId) {
@@ -225,10 +236,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
     }
 
     function isDepartureDateInPast(departureDate) {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        return new Date(departureDate) < today;
+        return isPastDate(departureDate);
     }
 
     function isFieldGuideDateConflicted(fieldGuideId, departureDate, excludeGroupId) {
@@ -301,6 +309,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<Route|null>}
      */
     function addRoute(route) {
+        if (!authorizeMutation()) return Promise.resolve(null);
         if (isRouteNameDuplicated(route.name)) {
             errors.value.push(
                 createApplicationError('errors.routeNameDuplicated'),
@@ -329,6 +338,14 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<Checkpoint|null>}
      */
     function addCheckpoint(checkpoint) {
+        if (!authorizeMutation()) return Promise.resolve(null);
+        if (!checkpoint.location.trim() || !Number.isInteger(checkpoint.sequenceOrder) || checkpoint.sequenceOrder <= 0
+            || !checkpoint.bluetoothId?.trim() || checkpoints.value.some((c) => c.bluetoothId === checkpoint.bluetoothId)
+            || !Number.isFinite(checkpoint.latitude) || Math.abs(checkpoint.latitude) > 90
+            || !Number.isFinite(checkpoint.longitude) || Math.abs(checkpoint.longitude) > 180) {
+            errors.value.push(createApplicationError('workflow.errors.checkpointConfiguration'));
+            return Promise.resolve(null);
+        }
         if (
             isCheckpointOrderDuplicated(
                 checkpoint.routeId,
@@ -365,6 +382,11 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<ExpectedTimeWindow|null>}
      */
     function addExpectedTimeWindow(expectedTimeWindow) {
+        if (!authorizeMutation()) return Promise.resolve(null);
+        if (!getRouteSegments(expectedTimeWindow.routeId).some((segment) => segment.fromCheckpoint.id === expectedTimeWindow.fromCheckpointId && segment.toCheckpoint.id === expectedTimeWindow.toCheckpointId)) {
+            errors.value.push(createApplicationError('workflow.errors.checkpointOrder'));
+            return Promise.resolve(null);
+        }
         if (
             !hasValidTimeWindowLimits(
                 expectedTimeWindow.minimumMinutes,
@@ -414,6 +436,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<ExpeditionGroup|null>}
      */
     function addExpeditionGroup(expeditionGroup) {
+        if (!authorizeMutation()) return Promise.resolve(null);
         if (!isRouteEnabledById(expeditionGroup.routeId)) {
             errors.value.push(
                 createApplicationError('errors.routeNotEnabledForGroups'),
@@ -454,6 +477,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<ExpeditionGroup|{conflict: true}|null>}
      */
     function assignFieldGuide(expeditionGroupId, fieldGuideId, confirmConflict = false) {
+        if (!authorizeMutation()) return Promise.resolve(null);
         const groupIndex = expeditionGroups.value.findIndex(
             (expeditionGroup) => expeditionGroup.id === expeditionGroupId,
         );
@@ -467,6 +491,14 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
         }
 
         const currentGroup = expeditionGroups.value[groupIndex];
+        if (currentGroup.status !== 'scheduled') {
+            errors.value.push(createApplicationError('workflow.errors.started'));
+            return Promise.resolve(null);
+        }
+        if (!fieldGuides.value.some((guide) => guide.id === fieldGuideId)) {
+            errors.value.push(createApplicationError('workflow.errors.forbidden'));
+            return Promise.resolve(null);
+        }
 
         if (
             !confirmConflict
@@ -509,6 +541,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<ManifestEntry|null>}
      */
     function addManifestEntry(manifestEntry) {
+        if (!authorizeMutation(manifestEntry.expeditionGroupId)) return Promise.resolve(null);
         if (
             isIdentityDocumentDuplicated(
                 manifestEntry.expeditionGroupId,
@@ -571,6 +604,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
      * @returns {Promise<Route|null>}
      */
     function enableRoute(routeId) {
+        if (!authorizeMutation()) return Promise.resolve(null);
         if (!routeHasCheckpoints(routeId)) {
             errors.value.push(
                 createApplicationError('errors.routeRequiresCheckpoint'),

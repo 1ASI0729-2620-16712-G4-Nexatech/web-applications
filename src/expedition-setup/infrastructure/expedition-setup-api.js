@@ -1,15 +1,15 @@
 import { BaseApi } from '../../shared/infrastructure/base-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
-const routesEndpointPath = import.meta.env.VITE_ROUTES_ENDPOINT_PATH;
-const checkpointsEndpointPath = import.meta.env.VITE_CHECKPOINTS_ENDPOINT_PATH;
+const routesEndpointPath = import.meta.env.VITE_ROUTES_ENDPOINT_PATH || '/routes';
+const checkpointsEndpointPath = import.meta.env.VITE_CHECKPOINTS_ENDPOINT_PATH || '/checkpoints';
 const expectedTimeWindowsEndpointPath = import.meta.env
-    .VITE_EXPECTED_TIME_WINDOWS_ENDPOINT_PATH;
+    .VITE_EXPECTED_TIME_WINDOWS_ENDPOINT_PATH || '/expected-time-windows';
 const expeditionGroupsEndpointPath = import.meta.env
-    .VITE_EXPEDITION_GROUPS_ENDPOINT_PATH;
-const fieldGuidesEndpointPath = import.meta.env.VITE_FIELD_GUIDES_ENDPOINT_PATH;
+    .VITE_EXPEDITION_GROUPS_ENDPOINT_PATH || '/expedition-groups';
+const fieldGuidesEndpointPath = import.meta.env.VITE_FIELD_GUIDES_ENDPOINT_PATH || '/field-guides';
 const manifestEntriesEndpointPath = import.meta.env
-    .VITE_MANIFEST_ENTRIES_ENDPOINT_PATH;
+    .VITE_MANIFEST_ENTRIES_ENDPOINT_PATH || '/manifest-entries';
 
 /**
  * API gateway for the Expedition Setup bounded context.

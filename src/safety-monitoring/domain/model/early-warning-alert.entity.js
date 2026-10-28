@@ -24,7 +24,9 @@ export class EarlyWarningAlert {
                     triggeredAt = '',
                     resolvedAt = null,
                     riskEvidence = [],
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.expeditionGroupId = expeditionGroupId;
         this.type = type;

@@ -95,10 +95,7 @@ function goBackToGroups() {
     return;
   }
 
-  router.push({
-    name: 'route-groups',
-    params: { routeId: Number(route.params.routeId) },
-  });
+  router.push('/operations/expeditions');
 }
 
 onMounted(() => {

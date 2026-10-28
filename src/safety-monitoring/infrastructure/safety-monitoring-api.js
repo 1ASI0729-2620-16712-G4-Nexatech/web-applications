@@ -2,13 +2,14 @@ import { BaseApi } from '../../shared/infrastructure/base-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
 const earlyWarningAlertsEndpointPath = import.meta.env
-    .VITE_EARLY_WARNING_ALERTS_ENDPOINT_PATH;
+    .VITE_EARLY_WARNING_ALERTS_ENDPOINT_PATH || '/early-warning-alerts';
 
 /**
  * API gateway for the Safety Monitoring bounded context.
  */
 export class SafetyMonitoringApi extends BaseApi {
     #earlyWarningAlertsEndpoint;
+    #progressEndpoint;
 
     constructor() {
         super();
@@ -17,10 +18,18 @@ export class SafetyMonitoringApi extends BaseApi {
             this,
             earlyWarningAlertsEndpointPath,
         );
+        this.#progressEndpoint = new BaseEndpoint(this, '/group-progress');
     }
 
     getEarlyWarningAlerts() {
         return this.#earlyWarningAlertsEndpoint.getAll();
+    }
+
+    createEarlyWarningAlert(resource) { return this.#earlyWarningAlertsEndpoint.create(resource); }
+
+    async updateProgressRisk(groupId, riskLevel, status) {
+        const current = (await this.#progressEndpoint.getAll({ expeditionGroupId: groupId })).data[0];
+        if (current) await this.#progressEndpoint.patch(current.id, { riskLevel, status });
     }
 
     updateEarlyWarningAlert(earlyWarningAlertId, earlyWarningAlert) {

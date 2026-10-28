@@ -14,7 +14,9 @@ export class ManifestEntry {
                     expeditionGroupId = null,
                     fullName = '',
                     identityDocument = '',
+                ...metadata
                 } = {}) {
+        Object.assign(this, metadata);
         this.id = id;
         this.expeditionGroupId = expeditionGroupId;
         this.fullName = fullName;
