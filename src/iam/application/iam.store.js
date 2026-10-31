@@ -2,9 +2,9 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { IamApi } from '../infrastructure/iam-api.js';
 import { UserAssembler } from '../infrastructure/user.assembler.js';
-import { readSession, saveSession } from '../infrastructure/iam-session.js';
+import { readSession, saveSession, tokenExpiration } from '../infrastructure/iam-session.js';
 import { Roles } from '../domain/user.entity.js';
-import { requireCondition } from '../../shared/domain/application-error.js';
+import { ApplicationError, requireCondition } from '../../shared/domain/application-error.js';
 import { createActionState } from '../../shared/application/action-state.js';
 
 const api = new IamApi();
@@ -19,9 +19,14 @@ export default defineStore('iam', () => {
 
     async function signIn(command) {
         return state.run(async () => {
-            const resource = await api.signIn(command);
-            requireCondition(resource, 'workflow.errors.credentials');
-            session.value = { user: UserAssembler.toEntityFromResource(resource), token: `demo-${crypto.randomUUID()}`, expiresAt: Date.now() + 12 * 3600000 };
+            let response;
+            try { response = await api.signIn(command); }
+            catch (error) {
+                if ([400, 401].includes(error.response?.status)) throw new ApplicationError('workflow.errors.credentials');
+                throw error;
+            }
+            const { token, ...resource } = response.data;
+            session.value = { user: UserAssembler.toEntityFromResource(resource), token, expiresAt: tokenExpiration(token) };
             saveSession(session.value);
         });
     }
@@ -29,34 +34,38 @@ export default defineStore('iam', () => {
     async function signUp(command) {
         return state.run(async () => {
             requireCondition(command.agencyName && command.name && command.username && command.password.length >= 6);
-            requireCondition(!(await api.findUsername(command.username)).data.length, 'workflow.errors.username');
-            const agency = (await api.createAgency({ name: command.agencyName })).data;
-            try { await api.createUser({ ...command, agencyName: undefined, agencyId: agency.id, role: Roles.ADMIN }); }
-            catch (error) { await api.deleteAgency(agency.id); throw error; }
+            try { await api.signUp(command); }
+            catch (error) {
+                if (error.response?.status === 409) throw new ApplicationError('workflow.errors.username');
+                throw error;
+            }
         });
     }
     async function fetchUsers() {
         requireCondition(isAdmin.value, 'workflow.errors.forbidden');
-        users.value = UserAssembler.toEntitiesFromResponse(await api.getUsers(user.value.agencyId));
+        users.value = UserAssembler.toEntitiesFromResponse(await api.getUsers());
     }
     async function createAccount(resource) {
         return state.run(async () => {
             requireCondition(isAdmin.value, 'workflow.errors.forbidden');
             const username = resource.username.trim().toLowerCase();
+            const identityDocument = resource.identityDocument?.trim() || null;
             requireCondition(resource.name.trim() && username && resource.password.length >= 6);
             requireCondition([Roles.GUIDE, Roles.TOURIST].includes(resource.role));
             requireCondition(resource.role !== Roles.GUIDE || resource.fieldGuideId);
-            requireCondition(resource.role !== Roles.TOURIST || resource.identityDocument?.trim());
-            requireCondition(!(await api.findUsername(username)).data.length, 'workflow.errors.username');
+            requireCondition(resource.role !== Roles.TOURIST || identityDocument);
             await fetchUsers();
-            if (resource.role === Roles.GUIDE) {
-                requireCondition((await api.getGuides(user.value.agencyId, resource.fieldGuideId)).data.length > 0, 'workflow.errors.forbidden');
-                requireCondition(!users.value.some((u) => u.role === Roles.GUIDE && u.fieldGuideId === resource.fieldGuideId), 'workflow.errors.linkedIdentity');
-            } else {
-                requireCondition((await api.getManifest(user.value.agencyId, resource.identityDocument.trim())).data.length > 0, 'workflow.errors.manifestIdentity');
-                requireCondition(!users.value.some((u) => u.role === Roles.TOURIST && u.identityDocument === resource.identityDocument.trim()), 'workflow.errors.linkedIdentity');
-            }
-            await api.createUser({ ...resource, username, agencyId: user.value.agencyId });
+            requireCondition(!users.value.some((u) => u.username === username), 'workflow.errors.username');
+            requireCondition(resource.role !== Roles.GUIDE || !users.value.some((u) => u.role === Roles.GUIDE && u.fieldGuideId === resource.fieldGuideId), 'workflow.errors.linkedIdentity');
+            requireCondition(resource.role !== Roles.TOURIST || !users.value.some((u) => u.role === Roles.TOURIST && u.identityDocument === identityDocument), 'workflow.errors.linkedIdentity');
+            await api.createUser({
+                name: resource.name.trim(),
+                username,
+                password: resource.password,
+                role: resource.role,
+                fieldGuideId: resource.role === Roles.GUIDE ? resource.fieldGuideId : null,
+                identityDocument: resource.role === Roles.TOURIST ? identityDocument : null,
+            });
             await fetchUsers();
         });
     }

@@ -292,7 +292,7 @@
     "tourist": "Turista de aventura",
     "signIn": "Iniciar sesión",
     "register": "Registrar agencia",
-    "demoNotice": "Demostración académica · cuentas y telemetría simuladas.",
+    "demoNotice": "Demostración académica · autenticación con el RESTful API de VitalTrek y telemetría simulada.",
     "agency": "Nombre de la agencia",
     "name": "Nombre completo",
     "username": "Usuario",
@@ -449,7 +449,7 @@
     },
     "errors": {
       "invalid": "Revisa los campos obligatorios y sus valores.",
-      "requestFailed": "No se pudo completar la solicitud. Revisa la conexión y que la API de demostración esté activa.",
+      "requestFailed": "No se pudo completar la solicitud. Revisa la conexión e inténtalo de nuevo; el API puede tardar hasta un minuto en responder si estaba inactivo.",
       "credentials": "Usuario o contraseña incorrectos.",
       "username": "Ese usuario ya está registrado.",
       "forbidden": "Esta acción no está disponible para tu cuenta o expedición.",
@@ -473,9 +473,14 @@
       "returns": "Registra la condición de devolución de cada wearable asignado.",
       "linkedIdentity": "Este guía o turista ya tiene una cuenta.",
       "manifestIdentity": "Registra primero este documento en el manifiesto de la agencia.",
-      "checkpointConfiguration": "Ingresa coordenadas válidas, orden positivo e identificador Bluetooth único."
+      "checkpointConfiguration": "Ingresa coordenadas válidas, orden positivo e identificador Bluetooth único.",
+      "conflict": "La operación entra en conflicto con datos existentes. Revisa los valores ingresados.",
+      "sessionExpired": "Tu sesión expiró. Inicia sesión nuevamente.",
+      "notFound": "No se encontró el recurso solicitado."
     },
-    "bluetoothId": "Identificador Bluetooth único"
+    "bluetoothId": "Identificador Bluetooth único",
+    "nextSprint": "Disponible en el próximo sprint",
+    "nextSprintDescription": "Esta funcionalidad se integrará con el RESTful API de VitalTrek en un próximo sprint. En esta versión, las Web Applications consumen el API para la autenticación, la gestión de cuentas y la configuración de expediciones."
   },
   "tourist": {
     "title": "Tu aventura",
