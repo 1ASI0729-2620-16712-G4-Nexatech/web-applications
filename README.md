@@ -1,25 +1,33 @@
 # VitalTrek — Frontend Web Applications
 
-Frontend académico con Vue 3, Vite, PrimeVue, Pinia, Vue Router, Axios y Vue I18n. Inglés por defecto y español disponible. Esta entrega usa exclusivamente json-server.
+Frontend académico con Vue 3, Vite, PrimeVue, Pinia, Vue Router, Axios y Vue I18n. Inglés por defecto y español disponible. IAM y Expedition Setup consumen el [VitalTrek RESTful API](https://vitaltrek-api.onrender.com/scalar); Field Tracking, Checkpoint Sync, Safety Monitoring, Incident Response y Tour Closure conservan la Fake API (json-server) de TB1 y se integrarán al API en un próximo sprint.
 
 ## Ejecución local
 
+1. Iniciar el backend (`vitaltrek-backend`):
+
 ```powershell
-npm install
-npm run api
+dotnet run --project VitalTrek.API --launch-profile http
 ```
 
-En otra terminal:
+2. Iniciar el frontend:
 
 ```powershell
+npm install
 npm run dev
 ```
 
-Frontend: http://127.0.0.1:5173. Fake API: http://localhost:3000/api/v1. Vite redirige `/api/v1` al puerto 3000 para usar el mismo origen en el navegador. Los endpoints tienen valores predeterminados; `.env.example` contiene la configuración opcional.
+Frontend: http://127.0.0.1:5173. API local: http://localhost:5213/api/v1 (`VITE_VITALTREK_API_URL` en `.env.development`). Para usar el API desplegado en lugar del local, cambiar esa variable a `https://vitaltrek-api.onrender.com/api/v1`.
 
-`npm run api` persiste cambios en `server/db.json`. Como alternativa, `npm run api:demo` inicia una API **en memoria**: los cambios desaparecen al detener ese proceso y no afectan los fixtures. Ejecutar una sola API a la vez.
+### Variables de entorno
 
-`npm run api:reset` reemplaza los datos persistidos por `server/demo-seed.json`, descartando los cambios de demostraciones anteriores. Detener la API antes de ejecutarlo.
+| Variable | Desarrollo | Producción |
+| --- | --- | --- |
+| `VITE_VITALTREK_API_URL` | `http://localhost:5213/api/v1` | `https://vitaltrek-api.onrender.com/api/v1` |
+| `VITE_SIMULATED_OPERATIONS` | `false` | `false` |
+| `VITE_SIMULATED_API_URL` | `/simulated-api/v1` | `/simulated-api/v1` |
+
+Con `VITE_SIMULATED_OPERATIONS=false`, las pantallas de seguimiento, sincronización, alertas, incidentes y cierre muestran que estarán disponibles en el próximo sprint. Con `true`, esas pantallas usan json-server: ejecutar `npm run api` (persistente) o `npm run api:demo` (en memoria); Vite redirige `/simulated-api/v1` al puerto 3000. `npm run api:reset` restaura `server/db.json` desde `server/demo-seed.json`.
 
 ## Experiencias y cuentas
 
@@ -37,7 +45,7 @@ Administrador y guía comparten la aplicación operativa con capacidades distint
 
 El registro público crea una agencia y su administrador. Este registra guías y vincula sus cuentas. Las cuentas de turista se vinculan con un documento existente en el manifiesto de la agencia. No se puede seleccionar libremente otra identidad ni crear dos cuentas para la misma identidad dentro de una agencia.
 
-IAM es simulado: cuentas ficticias en JSON, sesión en sessionStorage durante un máximo de 12 horas, guards por rol/agencia/grupo e interceptor HTTP. Las restricciones de interfaz no sustituyen autorización en servidor: json-server no protege datos ni contraseñas. Usar datos de demostración.
+IAM usa el RESTful API: el inicio de sesión devuelve un token JWT que se guarda en sessionStorage hasta su expiración (12 horas) y el interceptor HTTP lo envía como `Authorization: Bearer` junto con el idioma de la interfaz. El API valida el rol y la agencia en cada operación; los guards de la interfaz solo orientan la navegación. Si el token expira, la sesión se cierra. Usar datos de demostración.
 
 ## Arquitectura DDD
 

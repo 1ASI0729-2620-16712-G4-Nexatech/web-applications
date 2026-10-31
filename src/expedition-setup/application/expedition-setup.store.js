@@ -511,14 +511,10 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             return Promise.resolve({ conflict: true });
         }
 
-        const groupToUpdate = new ExpeditionGroup({
-            ...currentGroup,
+        return expeditionSetupApi.assignFieldGuide(
+            currentGroup.id,
             fieldGuideId,
-        });
-
-        return expeditionSetupApi.updateExpeditionGroup(
-            groupToUpdate.id,
-            groupToUpdate,
+            confirmConflict,
         )
             .then((response) => {
                 const updatedGroup = ExpeditionGroupAssembler
@@ -625,12 +621,7 @@ const useExpeditionSetupStore = defineStore('expeditionSetup', () => {
             return Promise.resolve(null);
         }
 
-        const routeToEnable = new Route({
-            ...routes.value[routeIndex],
-            status: 'enabled',
-        });
-
-        return expeditionSetupApi.updateRoute(routeId, routeToEnable)
+        return expeditionSetupApi.updateRouteStatus(routeId, 'enabled')
             .then((response) => {
                 const enabledRoute = RouteAssembler.toEntityFromResource(response.data);
                 routes.value[routeIndex] = enabledRoute;

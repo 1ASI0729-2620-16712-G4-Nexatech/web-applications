@@ -292,7 +292,7 @@
     "tourist": "Adventure tourist",
     "signIn": "Sign in",
     "register": "Register agency",
-    "demoNotice": "Academic demonstration · simulated accounts and telemetry.",
+    "demoNotice": "Academic demonstration · authentication with the VitalTrek RESTful API and simulated telemetry.",
     "agency": "Agency name",
     "name": "Full name",
     "username": "Username",
@@ -449,7 +449,7 @@
     },
     "errors": {
       "invalid": "Check the required fields and their values.",
-      "requestFailed": "Could not complete the request. Check the connection and that the demo API is running.",
+      "requestFailed": "Could not complete the request. Check the connection and try again; the API may take up to a minute to respond after being idle.",
       "credentials": "Incorrect username or password.",
       "username": "That username is already registered.",
       "forbidden": "This action is unavailable for your account or expedition.",
@@ -473,9 +473,14 @@
       "returns": "Record the return condition of every assigned wearable.",
       "linkedIdentity": "This guide or tourist already has an account.",
       "manifestIdentity": "Register this identity document in the agency manifest first.",
-      "checkpointConfiguration": "Enter valid coordinates, positive order and a unique Bluetooth identifier."
+      "checkpointConfiguration": "Enter valid coordinates, positive order and a unique Bluetooth identifier.",
+      "conflict": "The operation conflicts with existing data. Review the values entered.",
+      "sessionExpired": "Your session has expired. Sign in again.",
+      "notFound": "The requested resource was not found."
     },
-    "bluetoothId": "Unique Bluetooth identifier"
+    "bluetoothId": "Unique Bluetooth identifier",
+    "nextSprint": "Available in the next sprint",
+    "nextSprintDescription": "This feature will be integrated with the VitalTrek RESTful API in an upcoming sprint. In this version, the Web Applications consume the API for authentication, account management and expedition setup."
   },
   "tourist": {
     "title": "Your adventure",

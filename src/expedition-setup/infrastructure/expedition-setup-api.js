@@ -56,8 +56,8 @@ export class ExpeditionSetupApi extends BaseApi {
         return this.#routesEndpoint.create(route);
     }
 
-    updateRoute(routeId, route) {
-        return this.#routesEndpoint.update(routeId, route);
+    updateRouteStatus(routeId, status) {
+        return this.http.patch(`${routesEndpointPath}/${routeId}/status`, { status });
     }
 
     getCheckpoints() {
@@ -86,10 +86,10 @@ export class ExpeditionSetupApi extends BaseApi {
         return this.#expeditionGroupsEndpoint.create(expeditionGroup);
     }
 
-    updateExpeditionGroup(expeditionGroupId, expeditionGroup) {
-        return this.#expeditionGroupsEndpoint.update(
-            expeditionGroupId,
-            expeditionGroup,
+    assignFieldGuide(expeditionGroupId, fieldGuideId, confirmScheduleConflict = false) {
+        return this.http.put(
+            `${expeditionGroupsEndpointPath}/${expeditionGroupId}/field-guide`,
+            { fieldGuideId, confirmScheduleConflict },
         );
     }
 

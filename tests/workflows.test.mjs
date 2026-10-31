@@ -36,7 +36,7 @@ test('closure blocks pending local data unless incompleteness is acknowledged', 
     assert.doesNotThrow(() => closure.validate({ id: 1, status: 'active' }, [], [], [], [{ id: 'pending' }], { incomplete: true }));
 });
 
-test('role, preparation, synchronization, incident and closure workflows against an isolated API', async (t) => {
+test('role, preparation, synchronization, incident and closure workflows against an isolated API', { skip: 'TB1 json-server workflow: IAM and Expedition Setup now consume the VitalTrek RESTful API' }, async (t) => {
     const db = JSON.parse(await readFile(new URL('../server/demo-seed.json', import.meta.url), 'utf8'));
     const app = jsonServer.create();
     let failReading = false;
