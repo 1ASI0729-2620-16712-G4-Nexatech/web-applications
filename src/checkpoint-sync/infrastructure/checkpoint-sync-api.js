@@ -1,7 +1,7 @@
-import { BaseApi } from '../../shared/infrastructure/base-api.js';
+import { SimulatedApi } from '../../shared/infrastructure/simulated-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
-export class CheckpointSyncApi extends BaseApi {
+export class CheckpointSyncApi extends SimulatedApi {
     constructor() {
         super();
         this.batches = new BaseEndpoint(this, '/sync-batches');

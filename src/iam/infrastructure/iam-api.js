@@ -1,16 +1,13 @@
 import { BaseApi } from '../../shared/infrastructure/base-api.js';
 
-/** Academic adapter. json-server accounts simulate authentication; no real identity provider. */
+/** API gateway for the IAM bounded context of the VitalTrek RESTful API. */
 export class IamApi extends BaseApi {
-    async signIn(command) {
-        const response = await this.http.get('/users', { params: { username: command.username } });
-        return response.data.find((user) => user.password === command.password) ?? null;
+    signIn(command) {
+        return this.http.post('/authentication/sign-in', { username: command.username, password: command.password });
     }
-    getUsers(agencyId) { return this.http.get('/users', { params: { agencyId } }); }
+    signUp(command) {
+        return this.http.post('/authentication/sign-up', { agencyName: command.agencyName, name: command.name, username: command.username, password: command.password });
+    }
+    getUsers() { return this.http.get('/users'); }
     createUser(resource) { return this.http.post('/users', resource); }
-    createAgency(resource) { return this.http.post('/agencies', resource); }
-    findUsername(username) { return this.http.get('/users', { params: { username } }); }
-    deleteAgency(id) { return this.http.delete(`/agencies/${id}`); }
-    getGuides(agencyId, id) { return this.http.get('/field-guides', { params: { agencyId, id } }); }
-    getManifest(agencyId, identityDocument) { return this.http.get('/manifest-entries', { params: { agencyId, identityDocument } }); }
 }

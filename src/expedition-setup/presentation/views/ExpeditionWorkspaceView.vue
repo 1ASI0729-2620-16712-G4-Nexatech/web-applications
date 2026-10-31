@@ -21,6 +21,8 @@ import { readLocal, writeLocal } from '../../../shared/infrastructure/offline-st
 import { requireCondition } from '../../../shared/domain/application-error.js';
 import { canAccessGroup } from '../../../iam/domain/user.entity.js';
 import WorkflowFeedback from '../../../shared/presentation/components/WorkflowFeedback.vue';
+import NextSprintNotice from '../../../shared/presentation/components/NextSprintNotice.vue';
+import { simulatedOperationsEnabled } from '../../../shared/infrastructure/simulated-operations.js';
 
 const setup = useSetupStore(), prep = usePreparationStore(), execution = useExecutionStore(), sync = useSyncStore(), safety = useSafetyStore(), incidents = useIncidentStore(), closure = useClosureStore(), iam = useIamStore();
 const { t } = useI18n(), route = useRoute(), tab = ref('preparation'), offline = ref(false);
@@ -36,7 +38,7 @@ const notes = computed(() => prep.notes.filter((n) => n.routeId === group.value?
 const key = `vitaltrek-workspace-${iam.user.id}-${id}`;
 async function refresh() {
     setup.clearErrors(); safety.clearErrors();
-    await Promise.all([setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(), setup.fetchCheckpoints(), setup.fetchExpectedTimeWindows(), prep.load(), execution.load(), sync.load(), safety.fetchEarlyWarningAlerts(), incidents.load(), closure.load()]);
+    await Promise.all([setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(), setup.fetchCheckpoints(), setup.fetchExpectedTimeWindows(), prep.load(), ...(simulatedOperationsEnabled ? [execution.load(), sync.load(), safety.fetchEarlyWarningAlerts(), incidents.load(), closure.load()] : [])]);
     requireCondition(canAccessGroup(iam.user, group.value), 'workflow.errors.forbidden');
     requireCondition(!setup.errors.length && !safety.errors.length, 'workflow.errors.requestFailed');
     offline.value = false;
@@ -66,6 +68,7 @@ onMounted(load);
     <template v-if="group && !busy">
       <nav class="vt-tabs" :aria-label="t('workflow.expeditionSections')"><button v-for="item in ['preparation', 'tracking', 'sync', 'incidents', 'closure']" :key="item" :class="{ active: tab === item }" :aria-current="tab === item ? 'page' : undefined" @click="tab = item">{{ t(`workflow.${item}`) }}</button></nav>
       <PreparationPanel v-if="tab === 'preparation'" />
+      <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <TrackingPanel v-else-if="tab === 'tracking'" />
       <SyncPanel v-else-if="tab === 'sync'" />
       <IncidentPanel v-else-if="tab === 'incidents'" />

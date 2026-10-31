@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import useExpeditionSetupStore from '../../../expedition-setup/application/expedition-setup.store.js';
 import useFieldTrackingStore from '../../../field-tracking/application/field-tracking.store.js';
 import useSafetyMonitoringStore from '../../../safety-monitoring/application/safety-monitoring.store.js';
+import { simulatedOperationsEnabled } from '../../infrastructure/simulated-operations.js';
 
 const { t } = useI18n();
 const expeditionSetupStore = useExpeditionSetupStore();
@@ -102,8 +103,10 @@ onMounted(() => {
   Promise.all([
     expeditionSetupStore.fetchRoutes(),
     expeditionSetupStore.fetchExpeditionGroups(),
-    fieldTrackingStore.fetchGroupProgressRecords(),
-    safetyMonitoringStore.fetchEarlyWarningAlerts(),
+    ...(simulatedOperationsEnabled ? [
+      fieldTrackingStore.fetchGroupProgressRecords(),
+      safetyMonitoringStore.fetchEarlyWarningAlerts(),
+    ] : []),
   ]);
 });
 </script>

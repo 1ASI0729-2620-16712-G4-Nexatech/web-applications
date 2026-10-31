@@ -1,4 +1,4 @@
-import { BaseApi } from '../../shared/infrastructure/base-api.js';
+import { SimulatedApi } from '../../shared/infrastructure/simulated-api.js';
 import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
 
 const earlyWarningAlertsEndpointPath = import.meta.env
@@ -7,7 +7,7 @@ const earlyWarningAlertsEndpointPath = import.meta.env
 /**
  * API gateway for the Safety Monitoring bounded context.
  */
-export class SafetyMonitoringApi extends BaseApi {
+export class SafetyMonitoringApi extends SimulatedApi {
     #earlyWarningAlertsEndpoint;
     #progressEndpoint;
 

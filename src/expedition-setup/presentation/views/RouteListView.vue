@@ -241,7 +241,7 @@ function goToGroups(routeId) {
           </div>
         </div>
 
-        <div class="route-card-footer">
+        <div v-if="route.status !== 'enabled'" class="route-card-footer">
           <span>
             <i class="pi pi-info-circle" aria-hidden="true" />
             {{ t('routes.addCheckpoints') }}
