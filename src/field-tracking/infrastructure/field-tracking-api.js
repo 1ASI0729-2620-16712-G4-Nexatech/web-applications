@@ -1,24 +1,8 @@
-import { SimulatedApi } from '../../shared/infrastructure/simulated-api.js';
-import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
+import { BaseApi } from '../../shared/infrastructure/base-api.js';
 
-const groupProgressEndpointPath = import.meta.env.VITE_GROUP_PROGRESS_ENDPOINT_PATH || '/group-progress';
-
-/**
- * API gateway for the Field Tracking bounded context.
- */
-export class FieldTrackingApi extends SimulatedApi {
-    #groupProgressEndpoint;
-
-    constructor() {
-        super();
-
-        this.#groupProgressEndpoint = new BaseEndpoint(
-            this,
-            groupProgressEndpointPath,
-        );
-    }
-
-    getGroupProgressRecords() {
-        return this.#groupProgressEndpoint.getAll();
+/** REST gateway for persisted field tracking progress. */
+export class FieldTrackingApi extends BaseApi {
+    getGroupProgress(groupId) {
+        return this.http.get(`/expedition-groups/${groupId}/tracking-progress`);
     }
 }

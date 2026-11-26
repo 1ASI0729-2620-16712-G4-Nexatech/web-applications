@@ -1,71 +1,108 @@
-import { computed, ref } from 'vue';
+import { ref, watch } from 'vue';
 import { defineStore } from 'pinia';
+import useIamStore from '../../iam/application/iam.store.js';
+import { Roles, canAccessGroup } from '../../iam/domain/user.entity.js';
+import { readLocal, writeLocal } from '../../shared/infrastructure/offline-storage.js';
 import { FieldTrackingApi } from '../infrastructure/field-tracking-api.js';
-import {
-    GroupProgressAssembler,
-} from '../infrastructure/group-progress.assembler.js';
+import { GroupProgressAssembler } from '../infrastructure/group-progress.assembler.js';
 
-const fieldTrackingApi = new FieldTrackingApi();
+const api = new FieldTrackingApi();
 
-const STALE_SYNCHRONIZATION_MINUTES = 30;
-
-function createApplicationError(code) {
-    const error = new Error(code);
-    error.code = code;
-    return error;
+function cacheKey(actor, group) {
+    return `vitaltrek-tracking-v1-${actor.agencyId}-${actor.id}-${actor.fieldGuideId}-${group.id}`;
 }
 
-const useFieldTrackingStore = defineStore('fieldTracking', () => {
-    const groupProgressRecords = ref([]);
-    const errors = ref([]);
-    const groupProgressRecordsLoaded = ref(false);
+function isAssignedGuide(actor, group) {
+    return actor?.role === Roles.GUIDE && Boolean(actor.fieldGuideId) && canAccessGroup(actor, group);
+}
 
-    const groupProgressRecordsCount = computed(() => (
-        groupProgressRecordsLoaded.value ? groupProgressRecords.value.length : 0
-    ));
-
-    function fetchGroupProgressRecords() {
-        return fieldTrackingApi.getGroupProgressRecords()
-            .then((response) => {
-                groupProgressRecords.value = GroupProgressAssembler
-                    .toEntitiesFromResponse(response);
-
-                groupProgressRecordsLoaded.value = true;
-            })
-            .catch(() => {
-                errors.value.push(
-                    createApplicationError('errors.groupProgressFetchFailed'),
-                );
-            }).finally(() => { groupProgressRecordsLoaded.value = true; });
-    }
-
-    function getGroupProgressByGroupId(expeditionGroupId) {
-        return groupProgressRecords.value.find((groupProgress) => (
-            groupProgress.expeditionGroupId === expeditionGroupId
-        ));
-    }
-
-    function isSynchronizationStale(synchronizedAt) {
-        const elapsedMinutes = (Date.now() - new Date(synchronizedAt).getTime())
-            / 60000;
-
-        return elapsedMinutes > STALE_SYNCHRONIZATION_MINUTES;
-    }
-
-    function clearErrors() {
-        errors.value = [];
-    }
-
-    return {
-        groupProgressRecords,
-        errors,
-        groupProgressRecordsLoaded,
-        groupProgressRecordsCount,
-        fetchGroupProgressRecords,
-        getGroupProgressByGroupId,
-        isSynchronizationStale,
-        clearErrors,
+function saveGuideSnapshot(actor, group, entry) {
+    if (!isAssignedGuide(actor, group)) return;
+    // Offline capture needs the confirmed session and passage order, not participant metrics.
+    const snapshot = entry?.session?.status === 'active' && {
+        session: entry.session,
+        progress: entry.progress ? { ...entry.progress, participants: [] } : null,
     };
-});
+    try { writeLocal(cacheKey(actor, group), snapshot || null); }
+    catch { /* A full local cache must not invalidate a successful server operation. */ }
+}
 
-export default useFieldTrackingStore;
+export default defineStore('fieldTracking', () => {
+    const iam = useIamStore();
+    const entries = ref({});
+    const loading = ref({});
+    const requests = new Map();
+
+    watch(() => iam.session, () => {
+        entries.value = {};
+        loading.value = {};
+        requests.clear();
+    }, { flush: 'sync' });
+
+    function restoreGroupProgress(group) {
+        const actor = iam.user;
+        const current = entries.value[group.id];
+        if (current?.session || current?.progress) {
+            entries.value[group.id] = { ...current, state: 'offline' };
+        } else if (isAssignedGuide(actor, group) && ['scheduled', 'active'].includes(group.status)) {
+            const cached = readLocal(cacheKey(actor, group), null);
+            entries.value[group.id] = { ...cached, state: cached ? 'offline' : 'unavailable' };
+        } else {
+            entries.value[group.id] = { state: 'unavailable' };
+        }
+    }
+
+    async function readProgress(group, authSession) {
+        try {
+            const { data } = await api.getGroupProgress(group.id);
+            if (iam.session !== authSession) return;
+            const progress = GroupProgressAssembler.toEntityFromResource(data, group.id);
+            const entry = {
+                state: 'ready',
+                session: { sessionId: progress.sessionId, status: progress.status },
+                progress,
+            };
+            entries.value[group.id] = entry;
+            saveGuideSnapshot(authSession.user, group, entry);
+        } catch (error) {
+            if (iam.session !== authSession) return;
+            const status = error.response?.status;
+            if (status === 404 && error.response.data?.code === 'Tracking.ProgressNotFound') {
+                entries.value[group.id] = { state: 'empty' };
+                saveGuideSnapshot(authSession.user, group, null);
+            } else if (!error.response && error.request) {
+                restoreGroupProgress(group);
+            } else {
+                entries.value[group.id] = { state: 'unavailable' };
+                if ([401, 403, 404].includes(status)) saveGuideSnapshot(authSession.user, group, null);
+            }
+        }
+    }
+
+    function fetchGroupProgress(group) {
+        const authSession = iam.session;
+        if (!authSession || group.agencyId !== authSession.user.agencyId) return;
+        if (requests.has(group.id)) return requests.get(group.id);
+        loading.value[group.id] = true;
+        const request = readProgress(group, authSession).finally(() => {
+            if (requests.get(group.id) !== request) return;
+            requests.delete(group.id);
+            delete loading.value[group.id];
+        });
+        requests.set(group.id, request);
+        return request;
+    }
+
+    function rememberStartedSession(group, session) {
+        const current = entries.value[group.id];
+        const entry = {
+            state: 'ready',
+            session: { sessionId: session.id, status: session.status },
+            progress: current?.progress?.sessionId === session.id ? current.progress : null,
+        };
+        entries.value[group.id] = entry;
+        saveGuideSnapshot(iam.user, group, entry);
+    }
+
+    return { entries, loading, fetchGroupProgress, restoreGroupProgress, rememberStartedSession };
+});

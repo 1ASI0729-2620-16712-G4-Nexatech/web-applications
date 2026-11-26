@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import useSetupStore from '../../application/expedition-setup.store.js';
 import usePreparationStore from '../../application/preparation.store.js';
 import useExecutionStore from '../../../field-tracking/application/expedition-execution.store.js';
+import useFieldTrackingStore from '../../../field-tracking/application/field-tracking.store.js';
 import useSyncStore from '../../../checkpoint-sync/application/checkpoint-sync.store.js';
 import useSafetyStore from '../../../safety-monitoring/application/safety-monitoring.store.js';
 import useIncidentStore from '../../../incident-response/application/incident-response.store.js';
@@ -25,10 +26,15 @@ import NextSprintNotice from '../../../shared/presentation/components/NextSprint
 import { simulatedOperationsEnabled } from '../../../shared/infrastructure/simulated-operations.js';
 
 const setup = useSetupStore(), prep = usePreparationStore(), execution = useExecutionStore(), sync = useSyncStore(), safety = useSafetyStore(), incidents = useIncidentStore(), closure = useClosureStore(), iam = useIamStore();
+const tracking = useFieldTrackingStore();
 const { t } = useI18n(), route = useRoute(), tab = ref('preparation'), offline = ref(false);
 const { busy, error, execute } = useWorkflow();
 const id = Number(route.params.groupId);
-const group = computed(() => setup.expeditionGroups.find((g) => g.id === id));
+const group = computed(() => setup.expeditionGroups.find((item) => item.id === id && canAccessGroup(iam.user, item)));
+const hasTracking = computed(() => group.value && (
+    ['active', 'finished'].includes(group.value.status) || execution.sessionFor(group.value)
+    || execution.queue(group.value).some((record) => record.sessionId)
+));
 const routeEntity = computed(() => setup.routes.find((r) => r.id === group.value?.routeId));
 const members = computed(() => setup.getManifestEntriesByGroupId(id));
 const checkpoints = computed(() => setup.getCheckpointsByRouteId(group.value?.routeId));
@@ -37,26 +43,44 @@ const protocol = computed(() => prep.protocols.find((p) => p.routeId === group.v
 const notes = computed(() => prep.notes.filter((n) => n.routeId === group.value?.routeId));
 const key = `vitaltrek-workspace-${iam.user.id}-${id}`;
 async function refresh() {
-    setup.clearErrors(); safety.clearErrors();
-    await Promise.all([setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(), setup.fetchCheckpoints(), setup.fetchExpectedTimeWindows(), prep.load(), ...(simulatedOperationsEnabled ? [execution.load(), sync.load(), safety.fetchEarlyWarningAlerts(), incidents.load(), closure.load()] : [])]);
-    requireCondition(canAccessGroup(iam.user, group.value), 'workflow.errors.forbidden');
-    requireCondition(!setup.errors.length && !safety.errors.length, 'workflow.errors.requestFailed');
+    setup.clearErrors();
+    safety.clearErrors();
+    const simulatedLoad = simulatedOperationsEnabled
+        ? Promise.allSettled([sync.load(), safety.fetchEarlyWarningAlerts(), incidents.load(), closure.load()])
+        : null;
+    await Promise.all([
+        setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(),
+        setup.fetchCheckpoints(), setup.fetchExpectedTimeWindows(), prep.load(),
+    ]);
+    requireCondition(!setup.errors.length, 'workflow.errors.requestFailed');
+    requireCondition(group.value, 'workflow.errors.forbidden');
+    if (hasTracking.value) await tracking.fetchGroupProgress(group.value);
+    await simulatedLoad;
     offline.value = false;
-    writeLocal(key, { savedAt: new Date().toISOString(), group: group.value, route: routeEntity.value, members: members.value, checkpoints: checkpoints.value, windows: setup.getExpectedTimeWindowsByRouteId(group.value.routeId), preparations: prep.preparations.filter((p) => p.expeditionGroupId === id), notes: notes.value, protocol: protocol.value, arrivals: execution.checkIns.filter((c) => c.expeditionGroupId === id), incidents: incidents.incidents.filter((i) => i.expeditionGroupId === id), summaries: closure.summaries.filter((s) => s.expeditionGroupId === id) });
+    writeLocal(key, { savedAt: new Date().toISOString(), group: group.value, route: routeEntity.value, members: members.value, checkpoints: checkpoints.value, windows: setup.getExpectedTimeWindowsByRouteId(group.value.routeId), preparations: prep.preparations.filter((p) => p.expeditionGroupId === id), notes: notes.value, protocol: protocol.value, incidents: incidents.incidents.filter((i) => i.expeditionGroupId === id), summaries: closure.summaries.filter((s) => s.expeditionGroupId === id) });
 }
 async function load() {
     const result = await execute(refresh, '');
-    if (!result) {
+    if (!result && !['workflow.errors.forbidden', 'workflow.errors.sessionExpired'].includes(error.value)) {
         const cached = readLocal(key, null);
         if (cached && canAccessGroup(iam.user, cached.group)) {
             setup.expeditionGroups = [cached.group]; setup.routes = [cached.route]; setup.manifestEntries = cached.members; setup.checkpoints = cached.checkpoints; setup.expectedTimeWindows = cached.windows;
             prep.preparations = cached.preparations.map((p) => new ParticipantPreparation(p)); prep.notes = cached.notes; prep.protocols = cached.protocol ? [cached.protocol] : [];
-            execution.checkIns = cached.arrivals; incidents.incidents = cached.incidents; closure.summaries = cached.summaries;
+            tracking.restoreGroupProgress(cached.group);
+            incidents.incidents = cached.incidents; closure.summaries = cached.summaries;
             offline.value = true; error.value = ''; setup.clearErrors(); safety.clearErrors();
         }
     }
 }
-provide('expedition-workspace', { setup, prep, execution, sync, safety, incidents, closure, iam, group, routeEntity, members, checkpoints, segments, protocol, notes, refresh });
+async function showTracking() {
+    tab.value = 'tracking';
+    await load();
+}
+
+provide('expedition-workspace', {
+    setup, prep, execution, tracking, sync, safety, incidents, closure, iam, group, routeEntity,
+    members, checkpoints, segments, protocol, notes, refresh, showTracking,
+});
 onMounted(load);
 </script>
 <template>
@@ -68,8 +92,13 @@ onMounted(load);
     <template v-if="group && !busy">
       <nav class="vt-tabs" :aria-label="t('workflow.expeditionSections')"><button v-for="item in ['preparation', 'tracking', 'sync', 'incidents', 'closure']" :key="item" :class="{ active: tab === item }" :aria-current="tab === item ? 'page' : undefined" @click="tab = item">{{ t(`workflow.${item}`) }}</button></nav>
       <PreparationPanel v-if="tab === 'preparation'" />
-      <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <TrackingPanel v-else-if="tab === 'tracking'" />
+      <section v-else-if="tab === 'sync' && hasTracking" class="vt-panel">
+        <h2>{{ t('workflow.sync') }}</h2>
+        <p class="vt-notice" role="status">{{ t('workflow.errors.syncUnavailable') }}</p>
+        <p v-if="execution.isGuide(group)">{{ t('workflow.queuedCount', { count: execution.pendingRecords(group).length }) }}</p>
+      </section>
+      <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <SyncPanel v-else-if="tab === 'sync'" />
       <IncidentPanel v-else-if="tab === 'incidents'" />
       <ClosurePanel v-else />

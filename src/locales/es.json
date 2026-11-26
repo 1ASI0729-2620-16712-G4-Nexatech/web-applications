@@ -201,9 +201,9 @@
   },
   "groupProgress": {
     "title": "Seguimiento de progreso de grupos",
-    "description": "Supervisa el progreso estimado de los grupos de expedición activos.",
+    "description": "Consulta el avance registrado de las expediciones y su última sincronización.",
     "lastConfirmedCheckpoint": "Último checkpoint confirmado",
-    "currentSegment": "Tramo actual",
+    "nextCheckpoint": "Siguiente checkpoint",
     "estimatedProgress": "Progreso estimado",
     "synchronizedAt": "Última sincronización",
     "status": {
@@ -215,7 +215,20 @@
       "medium": "Riesgo medio",
       "high": "Riesgo alto"
     },
-    "staleWarning": "Sin sincronización reciente. El progreso mostrado es una estimación.",
+    "staleWarning": "Han pasado 30 minutos o más desde la última sincronización.",
+    "confirmedCheckpoints": "Checkpoints confirmados",
+    "confirmed": "Confirmado",
+    "noSynchronization": "Aún no hay sincronizaciones",
+    "cachedProgress": "Mostrando los últimos datos disponibles sin conexión.",
+    "unavailable": "No se pudo consultar el seguimiento. Actualiza para reintentar.",
+    "waitingProgress": "Sesión activa. Actualiza para consultar el avance.",
+    "capturedAt": "Hora de captura",
+    "noReadings": "Aún no hay lecturas disponibles.",
+    "latestReadings": "Últimas lecturas por participante",
+    "ownReadings": "Mis últimas lecturas",
+    "position": "Posición",
+    "altitude": "Altitud",
+    "simulated": "simulado",
     "tourNotActive": "El seguimiento se habilita al iniciar el recorrido de este grupo.",
     "noGroups": "No se encontraron grupos de expedición"
   },
@@ -270,7 +283,7 @@
       "routes": "Rutas registradas",
       "routesHint": "{enabled} habilitadas de {total}",
       "groups": "Grupos de expedición",
-      "delayedGroups": "Grupos con retraso",
+      "activeGroups": "Grupos activos",
       "activeAlerts": "Alertas activas"
     },
     "shortcuts": {
@@ -354,6 +367,7 @@
     "ready": "Listo",
     "assign": "Asignar",
     "start": "Iniciar expedición",
+    "trackingStarted": "Expedición iniciada.",
     "routeContent": "Información de ruta y seguridad",
     "notes": "Notas de ruta",
     "protocol": "Protocolo de seguridad",
@@ -464,6 +478,7 @@
       "checkpoint": "Selecciona un checkpoint Bluetooth válido de esta ruta.",
       "emptyQueue": "No hay registros locales pendientes de sincronización.",
       "checkpointArrival": "Registra la llegada a este checkpoint antes de sincronizar.",
+      "syncUnavailable": "La sincronización aún no está disponible. Los registros pendientes siguen guardados en este dispositivo.",
       "syncFailed": "El lote no se completó. Los registros siguen pendientes para reintentar.",
       "transition": "Este cambio de estado no está permitido. Actualiza la expedición.",
       "description": "Ingresa una descripción o evidencia para esta acción.",
