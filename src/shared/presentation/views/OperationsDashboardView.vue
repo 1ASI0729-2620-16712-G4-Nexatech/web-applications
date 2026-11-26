@@ -16,8 +16,8 @@ const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
 const isLoading = computed(() => (
     !expeditionSetupStore.routesLoaded
     || !expeditionSetupStore.expeditionGroupsLoaded
-    || !fieldTrackingStore.groupProgressRecordsLoaded
-    || !safetyMonitoringStore.earlyWarningAlertsLoaded
+    || (simulatedOperationsEnabled && !fieldTrackingStore.groupProgressRecordsLoaded)
+    || (simulatedOperationsEnabled && !safetyMonitoringStore.earlyWarningAlertsLoaded)
 ));
 
 const enabledRoutesCount = computed(() => (
