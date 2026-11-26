@@ -267,3 +267,38 @@ test('a batch needs a valid arrival and a rejected passage does not enable the n
     assert.equal(execution.nextCheckpoint(group, checkpoints).id, second.id);
     assert.deepEqual(sync.syncCheckpoints(group, checkpoints), [first]);
 });
+
+test('a full queue reserves room for the selected arrival and its earlier required passage', async (t) => {
+    const { open, posts, storage } = await startHarness(t);
+    const { execution, sync, confirm } = open();
+    const scope = { agencyId: group.agencyId, userId: 5, expeditionGroupId: group.id, sessionId: session.id };
+    const readings = Array.from({ length: 500 }, (_, index) => {
+        const id = crypto.randomUUID();
+        return {
+            ...scope, ...values, id, clientRecordId: id, kind: 'telemetry', fieldGuideId: 7,
+            memberId: member.id, wearableDeviceId: preparation.wearableId,
+            recordedAt: new Date(Date.UTC(2026, 10, 10, 13, 10, index)).toISOString(),
+        };
+    });
+    storage.appendRecord(group.agencyId, readings[0]);
+    storage.writeLocal(storage.scopeKey(scope), readings);
+    execution.checkIn(group, first, checkpoints);
+    execution.checkIn(group, second, checkpoints);
+    const queuedPassages = storage.scopedRecords(scope).filter((item) => item.kind === 'check-in');
+
+    assert.equal(sync.pendingCount(group), 502);
+    await sync.synchronize(group, second, checkpoints);
+    assert.equal(posts[0].readings.length + posts[0].passages.length, 500);
+    assert.deepEqual(posts[0].passages, queuedPassages.map(({ clientRecordId, checkpointId, passedAt }) =>
+        ({ clientRecordId, checkpointId, passedAt })));
+    assert.deepEqual(posts[0].readings.map((item) => item.clientRecordId),
+        readings.slice(0, 498).map((item) => item.clientRecordId));
+    assert.equal(sync.pendingCount(group), 2);
+
+    confirm([first.id, second.id]);
+    await sync.synchronize(group, second, checkpoints);
+    assert.deepEqual(posts[1].passages, []);
+    assert.deepEqual(posts[1].readings.map(({ clientRecordId, recordedAt }) => ({ clientRecordId, recordedAt })),
+        readings.slice(498).map(({ clientRecordId, recordedAt }) => ({ clientRecordId, recordedAt })));
+    assert.equal(sync.pendingCount(group), 0);
+});

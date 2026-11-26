@@ -102,21 +102,29 @@ export default defineStore('checkpointSync', () => {
         return scope ? scopedRecords(scope) : [];
     }
 
-    /** Checkpoints with a valid arrival: confirmed by the server or pending, never rejected, in this session. */
+    function confirmedArrivalIds(group, scope) {
+        const progress = tracking.entries[group.id]?.progress;
+        const confirmed = scope && progress?.sessionId === scope.sessionId ? progress.confirmedCheckpoints : [];
+        return new Set(confirmed.map((checkpoint) => checkpoint.checkpointId));
+    }
+
+    /** Checkpoints with a confirmed or pending arrival in this session. */
     function arrivalCheckpointIds(group) {
         const scope = currentScope(group);
-        const confirmed = (tracking.entries[group.id]?.progress?.confirmedCheckpoints ?? [])
-            .filter(() => tracking.entries[group.id]?.progress?.sessionId === scope?.sessionId)
-            .map((checkpoint) => checkpoint.checkpointId);
-        const pending = scope ? currentRecords(group)
-            .filter((record) => record.kind === 'check-in' && isSyncable(record, scope.sessionId))
-            .map((record) => record.checkpointId) : [];
-        return new Set([...confirmed, ...pending]);
+        const arrivals = confirmedArrivalIds(group, scope);
+        if (!scope) return arrivals;
+        for (const record of currentRecords(group)) {
+            if (record.kind === 'check-in' && isSyncable(record, scope.sessionId)) {
+                arrivals.add(record.checkpointId);
+            }
+        }
+        return arrivals;
     }
 
     const syncCheckpoints = (group, checkpoints) => {
         const arrivals = arrivalCheckpointIds(group);
-        return checkpoints.filter((checkpoint) => arrivals.has(checkpoint.id));
+        const firstMissing = checkpoints.findIndex((checkpoint) => !arrivals.has(checkpoint.id));
+        return firstMissing === -1 ? checkpoints : checkpoints.slice(0, firstMissing);
     };
     const pendingBatch = (group) => findPending(group)?.batch ?? null;
     const history = (group) => guideScopes(group).flatMap((scope) => readLocal(historyKey(scope), []))
@@ -144,9 +152,13 @@ export default defineStore('checkpointSync', () => {
 
     function newBatch(group, scope, checkpoint, checkpoints) {
         requireCondition(tracking.entries[group.id]?.session?.status === 'active', 'workflow.errors.notActive');
-        requireCondition(checkpoints.some((item) => item.id === checkpoint?.id), 'workflow.errors.checkpoint');
+        const checkpointIndex = checkpoints.findIndex((item) => item.id === checkpoint?.id);
+        requireCondition(checkpointIndex >= 0, 'workflow.errors.checkpoint');
         requireCondition(arrivalCheckpointIds(group).has(checkpoint.id), 'workflow.errors.checkpointArrival');
-        const batch = SyncBatch.fromQueue(scope.sessionId, checkpoint.id, scopedRecords(scope));
+        const confirmed = confirmedArrivalIds(group, scope);
+        const requiredCheckpointIds = confirmed.has(checkpoint.id) ? [] : checkpoints.slice(0, checkpointIndex + 1)
+            .map((item) => item.id).filter((id) => !confirmed.has(id));
+        const batch = SyncBatch.fromQueue(scope.sessionId, checkpoint.id, scopedRecords(scope), requiredCheckpointIds);
         batch.validate(checkpoints);
         return {
             clientBatchId: batch.clientBatchId, checkpointId: batch.checkpointId, createdAt: batch.createdAt,

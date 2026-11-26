@@ -19,11 +19,27 @@ export class SyncBatch {
         Object.assign(this, { clientBatchId, sessionId, checkpointId, records, createdAt });
     }
 
-    /** Builds a batch with the pending records of the session, in capture order. */
-    static fromQueue(sessionId, checkpointId, queued) {
-        const records = queued.filter((record) => isSyncable(record, sessionId))
-            .sort((a, b) => Date.parse(a.recordedAt) - Date.parse(b.recordedAt))
-            .slice(0, SYNC_BATCH_LIMIT);
+    /** Reserves space for arrivals the server needs and fills the rest in capture order. */
+    static fromQueue(sessionId, checkpointId, queued, requiredCheckpointIds = []) {
+        const ordered = queued.filter((record) => isSyncable(record, sessionId))
+            .sort((a, b) => Date.parse(a.recordedAt) - Date.parse(b.recordedAt));
+        const earliestArrivals = new Map();
+        for (const record of ordered) {
+            if (record.kind === 'check-in' && !earliestArrivals.has(record.checkpointId)) {
+                earliestArrivals.set(record.checkpointId, record);
+            }
+        }
+        const requiredArrivals = new Set(requiredCheckpointIds.map((id) => earliestArrivals.get(id)));
+        requireCondition(!requiredArrivals.has(undefined) && requiredArrivals.size <= SYNC_BATCH_LIMIT,
+            'workflow.errors.checkpointOrder');
+
+        let remainingSlots = SYNC_BATCH_LIMIT - requiredArrivals.size;
+        const records = ordered.filter((record) => {
+            if (requiredArrivals.has(record)) return true;
+            if (remainingSlots === 0) return false;
+            remainingSlots -= 1;
+            return true;
+        });
         return new SyncBatch({ sessionId, checkpointId, records });
     }
 
