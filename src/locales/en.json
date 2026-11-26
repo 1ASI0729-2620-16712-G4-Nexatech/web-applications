@@ -491,11 +491,51 @@
       "checkpointConfiguration": "Enter valid coordinates, positive order and a unique Bluetooth identifier.",
       "conflict": "The operation conflicts with existing data. Review the values entered.",
       "sessionExpired": "Your session has expired. Sign in again.",
-      "notFound": "The requested resource was not found."
+      "notFound": "The requested resource was not found.",
+      "syncRetry": "The server did not confirm the batch. Records remain on this device and the same batch will be resent.",
+      "syncUnconfirmed": "The server response did not confirm the records. They remain on this device; retry to recover the result.",
+      "syncInProgress": "This batch is already being sent.",
+      "syncRecordConflict": "A record identifier was already used with different data. Nothing from this batch was saved.",
+      "syncBatchConflict": "The batch identifier was already used with different content. Nothing was saved; synchronize again to send a new batch."
     },
     "bluetoothId": "Unique Bluetooth identifier",
     "nextSprint": "Available in the next sprint",
-    "nextSprintDescription": "This feature will be integrated with the VitalTrek RESTful API in an upcoming sprint. In this version, the Web Applications consume the API for authentication, account management and expedition setup."
+    "nextSprintDescription": "This feature will be integrated with the VitalTrek RESTful API in an upcoming sprint. In this version, the Web Applications consume the API for authentication, account management and expedition setup.",
+    "syncPending": "Records ready to send from this device: {count}",
+    "syncLastReception": "Last batch confirmed by the server: {time}",
+    "syncNoReception": "No batch from this device has been confirmed by the server yet.",
+    "syncLegacy": "{count} records saved by an earlier version have no tracking session and cannot be sent. They remain on this device.",
+    "syncPendingBatch": "A batch of {count} records synchronized at {checkpoint} is waiting for confirmation (attempts: {attempts}). Retrying resends the same batch.",
+    "syncRetry": "Retry pending batch",
+    "syncRejected": "Rejected records",
+    "syncRejectedHelp": "These records were not saved by the server. They stay on this device with their reason; capture a corrected record or discard them.",
+    "discard": "Discard",
+    "rejected": "Rejected",
+    "evaluationStatus": "Evaluation",
+    "capturedAt": "Captured at",
+    "kind": "Type",
+    "reason": "Reason",
+    "refreshBatch": "Check result",
+    "kinds": {
+      "telemetry": "Reading",
+      "check-in": "Checkpoint passage"
+    },
+    "evaluation": {
+      "pending": "Pending evaluation"
+    },
+    "syncCodes": {
+      "Telemetry_InvalidRecordedAt": "Capture time outside the tracking session.",
+      "Telemetry_InvalidCoordinates": "Invalid coordinates or altitude.",
+      "Telemetry_InvalidHeartRate": "Heart rate outside the accepted input range.",
+      "Telemetry_InvalidBattery": "Battery level must be between 0 and 100.",
+      "Telemetry_InvalidDeviation": "Simulated deviation cannot be negative.",
+      "Telemetry_InvalidData": "Invalid reading.",
+      "Telemetry_WearableNotAssigned": "The wearable is not assigned to a participant of this group.",
+      "Telemetry_ConsentRequired": "The participant has no active monitoring consent.",
+      "Passage_CheckpointNotInRoute": "The checkpoint does not belong to this route.",
+      "Passage_InvalidPassedAt": "Passage time outside the tracking session.",
+      "Passage_OutOfSequence": "The previous checkpoint has not been passed before."
+    }
   },
   "tourist": {
     "title": "Your adventure",

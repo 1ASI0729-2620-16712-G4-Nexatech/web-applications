@@ -93,11 +93,7 @@ onMounted(load);
       <nav class="vt-tabs" :aria-label="t('workflow.expeditionSections')"><button v-for="item in ['preparation', 'tracking', 'sync', 'incidents', 'closure']" :key="item" :class="{ active: tab === item }" :aria-current="tab === item ? 'page' : undefined" @click="tab = item">{{ t(`workflow.${item}`) }}</button></nav>
       <PreparationPanel v-if="tab === 'preparation'" />
       <TrackingPanel v-else-if="tab === 'tracking'" />
-      <section v-else-if="tab === 'sync' && hasTracking" class="vt-panel">
-        <h2>{{ t('workflow.sync') }}</h2>
-        <p class="vt-notice" role="status">{{ t('workflow.errors.syncUnavailable') }}</p>
-        <p v-if="execution.isGuide(group)">{{ t('workflow.queuedCount', { count: execution.pendingRecords(group).length }) }}</p>
-      </section>
+      <SyncPanel v-else-if="tab === 'sync' && hasTracking" />
       <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <SyncPanel v-else-if="tab === 'sync'" />
       <IncidentPanel v-else-if="tab === 'incidents'" />

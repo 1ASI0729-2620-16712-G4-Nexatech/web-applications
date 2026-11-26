@@ -1,12 +1,14 @@
-import { SimulatedApi } from '../../shared/infrastructure/simulated-api.js';
-import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
+import { BaseApi } from '../../shared/infrastructure/base-api.js';
 
-export class CheckpointSyncApi extends SimulatedApi {
-    constructor() {
-        super();
-        this.batches = new BaseEndpoint(this, '/sync-batches');
-        this.telemetry = new BaseEndpoint(this, '/telemetry-records');
-        this.checkIns = new BaseEndpoint(this, '/check-ins');
-        this.progress = new BaseEndpoint(this, '/group-progress');
+/** REST gateway for the Checkpoint Sync batches of the VitalTrek RESTful API. */
+export class CheckpointSyncApi extends BaseApi {
+    /** Sends a batch; an identical retry with the same clientBatchId returns the persisted result (202). */
+    submitBatch(resource) {
+        return this.http.post('/sync-batches', resource);
+    }
+
+    /** Reads the persisted result of a batch. */
+    getBatch(batchId) {
+        return this.http.get(`/sync-batches/${batchId}`);
     }
 }

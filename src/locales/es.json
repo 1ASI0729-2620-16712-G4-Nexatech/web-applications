@@ -491,11 +491,51 @@
       "checkpointConfiguration": "Ingresa coordenadas válidas, orden positivo e identificador Bluetooth único.",
       "conflict": "La operación entra en conflicto con datos existentes. Revisa los valores ingresados.",
       "sessionExpired": "Tu sesión expiró. Inicia sesión nuevamente.",
-      "notFound": "No se encontró el recurso solicitado."
+      "notFound": "No se encontró el recurso solicitado.",
+      "syncRetry": "El servidor no confirmó el lote. Los registros siguen en este dispositivo y se reenviará el mismo lote.",
+      "syncUnconfirmed": "La respuesta del servidor no confirmó los registros. Siguen en este dispositivo; reintenta para recuperar el resultado.",
+      "syncInProgress": "Este lote ya se está enviando.",
+      "syncRecordConflict": "Un identificador de registro ya se usó con datos distintos. No se guardó nada de este lote.",
+      "syncBatchConflict": "El identificador del lote ya se usó con otro contenido. No se guardó nada; sincroniza de nuevo para enviar un lote nuevo."
     },
     "bluetoothId": "Identificador Bluetooth único",
     "nextSprint": "Disponible en el próximo sprint",
-    "nextSprintDescription": "Esta funcionalidad se integrará con el RESTful API de VitalTrek en un próximo sprint. En esta versión, las Web Applications consumen el API para la autenticación, la gestión de cuentas y la configuración de expediciones."
+    "nextSprintDescription": "Esta funcionalidad se integrará con el RESTful API de VitalTrek en un próximo sprint. En esta versión, las Web Applications consumen el API para la autenticación, la gestión de cuentas y la configuración de expediciones.",
+    "syncPending": "Registros listos para enviar desde este dispositivo: {count}",
+    "syncLastReception": "Último lote confirmado por el servidor: {time}",
+    "syncNoReception": "El servidor todavía no ha confirmado ningún lote de este dispositivo.",
+    "syncLegacy": "{count} registros guardados por una versión anterior no tienen sesión de seguimiento y no pueden enviarse. Se conservan en este dispositivo.",
+    "syncPendingBatch": "Un lote de {count} registros sincronizado en {checkpoint} espera confirmación (intentos: {attempts}). Al reintentar se reenvía el mismo lote.",
+    "syncRetry": "Reintentar lote pendiente",
+    "syncRejected": "Registros rechazados",
+    "syncRejectedHelp": "El servidor no guardó estos registros. Se conservan en este dispositivo con su motivo; captura un registro corregido o descártalos.",
+    "discard": "Descartar",
+    "rejected": "Rechazados",
+    "evaluationStatus": "Evaluación",
+    "capturedAt": "Capturado",
+    "kind": "Tipo",
+    "reason": "Motivo",
+    "refreshBatch": "Consultar resultado",
+    "kinds": {
+      "telemetry": "Lectura",
+      "check-in": "Paso por checkpoint"
+    },
+    "evaluation": {
+      "pending": "Evaluación pendiente"
+    },
+    "syncCodes": {
+      "Telemetry_InvalidRecordedAt": "Hora de captura fuera de la sesión de seguimiento.",
+      "Telemetry_InvalidCoordinates": "Coordenadas o altitud inválidas.",
+      "Telemetry_InvalidHeartRate": "Pulso fuera del rango de entrada aceptado.",
+      "Telemetry_InvalidBattery": "La batería debe estar entre 0 y 100.",
+      "Telemetry_InvalidDeviation": "La desviación simulada no puede ser negativa.",
+      "Telemetry_InvalidData": "Lectura inválida.",
+      "Telemetry_WearableNotAssigned": "El wearable no está asignado a un participante de este grupo.",
+      "Telemetry_ConsentRequired": "El participante no tiene consentimiento de monitoreo activo.",
+      "Passage_CheckpointNotInRoute": "El checkpoint no pertenece a esta ruta.",
+      "Passage_InvalidPassedAt": "Hora del paso fuera de la sesión de seguimiento.",
+      "Passage_OutOfSequence": "El checkpoint anterior no se ha pasado antes."
+    }
   },
   "tourist": {
     "title": "Tu aventura",
