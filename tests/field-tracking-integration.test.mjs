@@ -124,9 +124,8 @@ test('field tracking starts a real session, preserves server progress, and queue
     assert.equal(savedPassage.checkpointId, second.id);
     assert.equal(execution.checkIns.length, 1);
     assert.equal(tracking.entries[group.id].progress.estimatedProgressPercentage, 50);
-    await assert.rejects(useCheckpointSyncStore(initialPinia).synchronize(activeGroup, second, [first, second]), {
-        code: 'workflow.errors.syncUnavailable',
-    });
+    // Real batch synchronization is covered by tests/checkpoint-sync-integration.test.mjs.
+    assert.equal(useCheckpointSyncStore(initialPinia).pendingCount(activeGroup), 2);
     assert.equal(execution.pendingRecords(activeGroup).length, 2);
 
     const reload = createPinia();

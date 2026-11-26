@@ -4,13 +4,12 @@ import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import useSetupStore from './expedition-setup/application/expedition-setup.store.js';
 import useSafetyStore from './safety-monitoring/application/safety-monitoring.store.js';
-import useTrackingStore from './field-tracking/application/field-tracking.store.js';
 import AppLayout from './shared/presentation/components/AppLayout.vue';
 
 const route = useRoute();
 const { t } = useI18n();
-const setup = useSetupStore(), safety = useSafetyStore(), tracking = useTrackingStore();
-const failures = computed(() => [...setup.errors, ...safety.errors, ...tracking.errors]);
+const setup = useSetupStore(), safety = useSafetyStore();
+const failures = computed(() => [...setup.errors, ...safety.errors]);
 function retry() { window.location.reload(); }
 
 const workspace = computed(() => (

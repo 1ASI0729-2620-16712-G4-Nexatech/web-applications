@@ -47,7 +47,9 @@ export default defineStore('execution', () => {
 
     function pendingArrivals(group) {
         const sessionId = sessionFor(group)?.sessionId;
-        return pendingRecords(group).filter((item) => item.kind === 'check-in' && item.sessionId === sessionId);
+        // A passage rejected by the server is not an arrival and must not enable the next checkpoint.
+        return pendingRecords(group).filter((item) => item.kind === 'check-in' && item.sessionId === sessionId
+            && !item.rejection);
     }
 
     function nextCheckpoint(group, checkpoints) {

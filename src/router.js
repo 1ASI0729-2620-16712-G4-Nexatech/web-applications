@@ -26,9 +26,9 @@ const expeditionGroupConfigurationView = () => import(
 const touristManifestView = () => import(
     './expedition-setup/presentation/views/TouristManifestView.vue'
     );
-const groupProgressDashboardView = simulatedOperationsEnabled ? () => import(
+const groupProgressDashboardView = () => import(
     './field-tracking/presentation/views/GroupProgressDashboardView.vue'
-    ) : nextSprintView;
+    );
 const earlyWarningAlertDashboardView = simulatedOperationsEnabled ? () => import(
     './safety-monitoring/presentation/views/EarlyWarningAlertDashboardView.vue'
     ) : nextSprintView;
