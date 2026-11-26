@@ -1,25 +1,12 @@
 import { GroupProgress } from '../domain/model/group-progress.entity.js';
 
-/**
- * Maps Group Progress resources into Group Progress domain entities.
- */
 export class GroupProgressAssembler {
-    static toEntityFromResource(resource) {
-        return new GroupProgress({ ...resource });
-    }
-
-    static toEntitiesFromResponse(response) {
-        if (response.status !== 200) {
-            console.error(`${response.status}, ${response.statusText}`);
-            return [];
+    static toEntityFromResource(resource, groupId) {
+        if (resource?.expeditionGroupId !== groupId || !Number.isInteger(resource.sessionId)
+            || resource.sessionId <= 0 || !Array.isArray(resource.confirmedCheckpoints)
+            || !Array.isArray(resource.participants)) {
+            throw new Error('Invalid tracking progress response');
         }
-
-        const resources = Array.isArray(response.data)
-            ? response.data
-            : response.data['group-progress'];
-
-        return resources.map((resource) => (
-            this.toEntityFromResource(resource)
-        ));
+        return new GroupProgress(resource);
     }
 }

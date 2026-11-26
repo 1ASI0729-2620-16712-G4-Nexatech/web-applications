@@ -2,13 +2,11 @@
 import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import useExpeditionSetupStore from '../../../expedition-setup/application/expedition-setup.store.js';
-import useFieldTrackingStore from '../../../field-tracking/application/field-tracking.store.js';
 import useSafetyMonitoringStore from '../../../safety-monitoring/application/safety-monitoring.store.js';
 import { simulatedOperationsEnabled } from '../../infrastructure/simulated-operations.js';
 
 const { t } = useI18n();
 const expeditionSetupStore = useExpeditionSetupStore();
-const fieldTrackingStore = useFieldTrackingStore();
 const safetyMonitoringStore = useSafetyMonitoringStore();
 
 const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
@@ -16,7 +14,6 @@ const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
 const isLoading = computed(() => (
     !expeditionSetupStore.routesLoaded
     || !expeditionSetupStore.expeditionGroupsLoaded
-    || (simulatedOperationsEnabled && !fieldTrackingStore.groupProgressRecordsLoaded)
     || (simulatedOperationsEnabled && !safetyMonitoringStore.earlyWarningAlertsLoaded)
 ));
 
@@ -24,10 +21,8 @@ const enabledRoutesCount = computed(() => (
     expeditionSetupStore.routes.filter((route) => route.status === 'enabled').length
 ));
 
-const delayedGroupsCount = computed(() => (
-    fieldTrackingStore.groupProgressRecords.filter(
-        (progress) => progress.status === 'delayed',
-    ).length
+const activeGroupsCount = computed(() => (
+    expeditionSetupStore.expeditionGroups.filter((group) => group.status === 'active').length
 ));
 
 const statTiles = computed(() => ([
@@ -51,11 +46,11 @@ const statTiles = computed(() => ([
     hint: '',
   },
   {
-    key: 'delayed',
-    icon: 'pi pi-exclamation-triangle',
-    tone: delayedGroupsCount.value > 0 ? 'warning' : 'good',
-    value: delayedGroupsCount.value,
-    label: t('operationsDashboard.stats.delayedGroups'),
+    key: 'active',
+    icon: 'pi pi-map-marker',
+    tone: 'neutral',
+    value: activeGroupsCount.value,
+    label: t('operationsDashboard.stats.activeGroups'),
     hint: '',
   },
   {
@@ -104,7 +99,6 @@ onMounted(() => {
     expeditionSetupStore.fetchRoutes(),
     expeditionSetupStore.fetchExpeditionGroups(),
     ...(simulatedOperationsEnabled ? [
-      fieldTrackingStore.fetchGroupProgressRecords(),
       safetyMonitoringStore.fetchEarlyWarningAlerts(),
     ] : []),
   ]);

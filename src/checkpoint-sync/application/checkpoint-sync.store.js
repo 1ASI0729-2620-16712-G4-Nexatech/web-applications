@@ -21,7 +21,9 @@ export default defineStore('checkpointSync', () => {
         return state.run(async () => {
             const iam = useIamStore();
             requireCondition(iam.user?.role === Roles.GUIDE && canAccessGroup(iam.user, group), 'workflow.errors.forbidden');
-            const batch = new SyncBatch({ expeditionGroupId: group.id, checkpointId: checkpoint?.id, records: queuedRecords(group.agencyId, group.id) });
+            const records = queuedRecords(group.agencyId, group.id);
+            requireCondition(!records.some((record) => record.sessionId), 'workflow.errors.syncUnavailable');
+            const batch = new SyncBatch({ expeditionGroupId: group.id, checkpointId: checkpoint?.id, records });
             batch.validate(group, checkpoint, members, preparations);
             const previous = (await api.checkIns.getAll({ expeditionGroupId: group.id })).data;
             const arrivals = [...previous, ...batch.records.filter((r) => r.kind === 'check-in')];

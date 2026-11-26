@@ -201,9 +201,9 @@
   },
   "groupProgress": {
     "title": "Group progress tracking",
-    "description": "Monitor the estimated progress of active expedition groups.",
+    "description": "View recorded expedition progress and the last synchronization.",
     "lastConfirmedCheckpoint": "Last confirmed checkpoint",
-    "currentSegment": "Current segment",
+    "nextCheckpoint": "Next checkpoint",
     "estimatedProgress": "Estimated progress",
     "synchronizedAt": "Last synchronized",
     "status": {
@@ -215,7 +215,20 @@
       "medium": "Medium risk",
       "high": "High risk"
     },
-    "staleWarning": "No recent synchronization. Progress shown is an estimate.",
+    "staleWarning": "At least 30 minutes have passed since the last synchronization.",
+    "confirmedCheckpoints": "Confirmed checkpoints",
+    "confirmed": "Confirmed",
+    "noSynchronization": "No synchronization yet",
+    "cachedProgress": "Showing the latest available data while offline.",
+    "unavailable": "Tracking could not be loaded. Refresh to try again.",
+    "waitingProgress": "Session active. Refresh to view progress.",
+    "capturedAt": "Captured at",
+    "noReadings": "No readings are available yet.",
+    "latestReadings": "Latest readings per participant",
+    "ownReadings": "My latest readings",
+    "position": "Position",
+    "altitude": "Altitude",
+    "simulated": "simulated",
     "tourNotActive": "Tracking is enabled once this group starts its tour.",
     "noGroups": "No expedition groups found"
   },
@@ -270,7 +283,7 @@
       "routes": "Registered routes",
       "routesHint": "{enabled} enabled of {total}",
       "groups": "Expedition groups",
-      "delayedGroups": "Delayed groups",
+      "activeGroups": "Active groups",
       "activeAlerts": "Active alerts"
     },
     "shortcuts": {
@@ -354,6 +367,7 @@
     "ready": "Ready",
     "assign": "Assign",
     "start": "Start expedition",
+    "trackingStarted": "Expedition started.",
     "routeContent": "Route and safety information",
     "notes": "Route notes",
     "protocol": "Safety protocol",
@@ -464,6 +478,7 @@
       "checkpoint": "Select a valid Bluetooth checkpoint on this route.",
       "emptyQueue": "There are no local records pending synchronization.",
       "checkpointArrival": "Record arrival at this checkpoint before synchronizing.",
+      "syncUnavailable": "Synchronization is unavailable. Pending records remain saved on this device.",
       "syncFailed": "The batch could not be completed. Records remain queued for retry.",
       "transition": "This state change is not allowed. Refresh the expedition.",
       "description": "Enter a description or evidence for this action.",

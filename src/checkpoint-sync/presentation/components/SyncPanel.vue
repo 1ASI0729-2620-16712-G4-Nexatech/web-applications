@@ -11,9 +11,8 @@ async function synchronize() {
     await execute(async () => {
         await sync.synchronize(group.value, checkpoints.value.find((c) => c.id === checkpointId.value), checkpoints.value, members.value, prep.preparations);
         execution.revision += 1;
-        await execution.load();
-        await safety.evaluate(group.value, sync.telemetry, execution.checkIns, segments.value, prep.preparations);
         await refresh();
+        await safety.evaluate(group.value, sync.telemetry, execution.checkIns, segments.value, prep.preparations);
     }, 'workflow.synced');
 }
 </script>

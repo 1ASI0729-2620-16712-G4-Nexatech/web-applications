@@ -1,10 +1,7 @@
-import { SimulatedApi } from '../../shared/infrastructure/simulated-api.js';
-import { BaseEndpoint } from '../../shared/infrastructure/base-endpoint.js';
+import { BaseApi } from '../../shared/infrastructure/base-api.js';
 
-export class ExpeditionExecutionApi extends SimulatedApi {
-    constructor() {
-        super();
-        this.groups = new BaseEndpoint(this, '/expedition-groups');
-        this.checkIns = new BaseEndpoint(this, '/check-ins');
+export class ExpeditionExecutionApi extends BaseApi {
+    startTrackingSession(expeditionGroupId) {
+        return this.http.post('/tracking-sessions', { expeditionGroupId });
     }
 }
