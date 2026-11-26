@@ -6,7 +6,7 @@ import { SyncBatch, isSyncable } from '../domain/model/sync-batch.entity.js';
 import { createActionState } from '../../shared/application/action-state.js';
 import { ApplicationError, requireCondition } from '../../shared/domain/application-error.js';
 import {
-    legacyRecords, markRejected, migrateLegacyQueue, readLocal, removeRecords, scopeKey, scopedRecords, writeLocal,
+    legacyRecords, markRejected, migrateLegacyQueue, readLocal, removeRecords, scopeKey, scopedRecords, scopesFor, writeLocal,
 } from '../../shared/infrastructure/offline-storage.js';
 import useIamStore from '../../iam/application/iam.store.js';
 import useFieldTrackingStore from '../../field-tracking/application/field-tracking.store.js';
@@ -18,6 +18,7 @@ const HISTORY_LIMIT = 20;
 const batchErrorCodes = {
     'SyncBatch.RecordIdentityConflict': 'workflow.errors.syncRecordConflict',
     'SyncBatch.BatchIdentityConflict': 'workflow.errors.syncBatchConflict',
+    'SyncBatch.CheckpointArrivalRequired': 'workflow.errors.checkpointArrival',
     'SyncBatch.SessionNotActive': 'workflow.errors.notActive',
     'SyncBatch.SessionNotFound': 'workflow.errors.notFound',
     'SyncBatch.CheckpointNotInSessionRoute': 'workflow.errors.checkpoint',
@@ -36,9 +37,10 @@ function isRetryable(error) {
 async function withScopeLock(key, action) {
     const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
     if (!locks?.request) return action();
-    return locks.request(`vitaltrek-sync-${key}`, { ifAvailable: true }, (lock) => {
+    // An async callback turns every failure into a rejection, so the lock is always released.
+    return locks.request(`vitaltrek-sync-${key}`, { ifAvailable: true }, async (lock) => {
         if (!lock) throw new ApplicationError('workflow.errors.syncInProgress');
-        return action();
+        return await action();
     });
 }
 
@@ -46,8 +48,6 @@ export default defineStore('checkpointSync', () => {
     const iam = useIamStore();
     const tracking = useFieldTrackingStore();
     const revision = ref(0);
-    /** Readings confirmed by the server in this browser session; input of the demonstration safety rules. */
-    const telemetry = ref([]);
     const online = ref(typeof navigator === 'undefined' || navigator.onLine !== false);
     const sending = new Set();
     const state = createActionState();
@@ -62,32 +62,72 @@ export default defineStore('checkpointSync', () => {
     }
 
     /** The queue of the signed-in guide for the tracking session the server confirmed for this group. */
-    function scopeFor(group) {
+    function currentScope(group) {
         const sessionId = tracking.entries[group.id]?.session?.sessionId;
         if (!isGuide(group) || !Number.isInteger(sessionId)) return null;
         return { agencyId: group.agencyId, userId: iam.user.id, expeditionGroupId: group.id, sessionId };
     }
 
-    function read(group, key, fallback) {
+    /** Every queue of the guide in this group, including sessions that already ended. */
+    function guideScopes(group) {
         void revision.value;
-        const scope = scopeFor(group);
-        return scope ? readLocal(key(scope), fallback) : fallback;
+        if (!isGuide(group)) return [];
+        const scopes = scopesFor(group.agencyId, iam.user.id, group.id);
+        const current = currentScope(group);
+        return current && !scopes.some((scope) => scope.sessionId === current.sessionId) ? [...scopes, current] : scopes;
     }
 
-    function records(group) {
+    /**
+     * A batch saved before sending, of any session of the guide in this group. It is always recoverable with the same
+     * clientBatchId, even after the expedition closed: the server answers a stored batch before checking the session.
+     */
+    function findPending(group) {
+        for (const scope of guideScopes(group)) {
+            const batch = readLocal(pendingKey(scope), null);
+            if (batch) return { scope, batch };
+        }
+        return null;
+    }
+
+    /** Moves captures saved by an earlier version of the queue; runs when Synchronization opens. */
+    function prepare(group) {
+        if (!isGuide(group)) return;
+        migrateLegacyQueue(group.agencyId);
+        revision.value += 1;
+    }
+
+    function currentRecords(group) {
         void revision.value;
-        const scope = scopeFor(group);
+        const scope = currentScope(group);
         return scope ? scopedRecords(scope) : [];
     }
 
-    const pendingBatch = (group) => read(group, pendingKey, null);
-    const history = (group) => read(group, historyKey, []);
+    /** Checkpoints with a valid arrival: confirmed by the server or pending, never rejected, in this session. */
+    function arrivalCheckpointIds(group) {
+        const scope = currentScope(group);
+        const confirmed = (tracking.entries[group.id]?.progress?.confirmedCheckpoints ?? [])
+            .filter(() => tracking.entries[group.id]?.progress?.sessionId === scope?.sessionId)
+            .map((checkpoint) => checkpoint.checkpointId);
+        const pending = scope ? currentRecords(group)
+            .filter((record) => record.kind === 'check-in' && isSyncable(record, scope.sessionId))
+            .map((record) => record.checkpointId) : [];
+        return new Set([...confirmed, ...pending]);
+    }
+
+    const syncCheckpoints = (group, checkpoints) => {
+        const arrivals = arrivalCheckpointIds(group);
+        return checkpoints.filter((checkpoint) => arrivals.has(checkpoint.id));
+    };
+    const pendingBatch = (group) => findPending(group)?.batch ?? null;
+    const history = (group) => guideScopes(group).flatMap((scope) => readLocal(historyKey(scope), []))
+        .sort((a, b) => String(b.receivedAt).localeCompare(String(a.receivedAt))).slice(0, HISTORY_LIMIT);
     const lastReceivedAt = (group) => history(group)[0]?.receivedAt ?? null;
     const pendingCount = (group) => {
-        const scope = scopeFor(group);
-        return scope ? records(group).filter((record) => isSyncable(record, scope.sessionId)).length : 0;
+        const scope = currentScope(group);
+        return scope ? currentRecords(group).filter((record) => isSyncable(record, scope.sessionId)).length : 0;
     };
-    const rejectedRecords = (group) => records(group).filter((record) => record.rejection);
+    const rejectedRecords = (group) => guideScopes(group).flatMap((scope) => scopedRecords(scope))
+        .filter((record) => record.rejection);
     const legacyCount = (group) => { void revision.value; return isGuide(group) ? legacyRecords(group.agencyId, group.id).length : 0; };
 
     function rememberResult(scope, result, resource) {
@@ -99,24 +139,22 @@ export default defineStore('checkpointSync', () => {
             .map((record) => ({ ...record, batchId: result.batchId })));
         const previous = readLocal(historyKey(scope), []).filter((item) => item.batchId !== result.batchId);
         writeLocal(historyKey(scope), [{ ...result }, ...previous].slice(0, HISTORY_LIMIT));
-        const known = new Set(telemetry.value.map((reading) => reading.clientRecordId));
-        telemetry.value = [...telemetry.value, ...resource.readings
-            .filter((reading) => confirmed.has(reading.clientRecordId) && !known.has(reading.clientRecordId))
-            .map((reading) => ({ ...reading, expeditionGroupId: scope.expeditionGroupId, sessionId: scope.sessionId }))];
         writeLocal(pendingKey(scope), null);
     }
 
-    async function send(scope, checkpoint, checkpoints) {
-        migrateLegacyQueue(scope.agencyId);
-        let pending = readLocal(pendingKey(scope), null);
-        if (!pending) {
-            const batch = SyncBatch.fromQueue(scope.sessionId, checkpoint?.id, scopedRecords(scope));
-            batch.validate(checkpoints);
-            pending = {
-                clientBatchId: batch.clientBatchId, checkpointId: batch.checkpointId, createdAt: batch.createdAt,
-                attempts: 0, resource: SyncBatchAssembler.toResourceFromEntity(batch),
-            };
-        }
+    function newBatch(group, scope, checkpoint, checkpoints) {
+        requireCondition(tracking.entries[group.id]?.session?.status === 'active', 'workflow.errors.notActive');
+        requireCondition(checkpoints.some((item) => item.id === checkpoint?.id), 'workflow.errors.checkpoint');
+        requireCondition(arrivalCheckpointIds(group).has(checkpoint.id), 'workflow.errors.checkpointArrival');
+        const batch = SyncBatch.fromQueue(scope.sessionId, checkpoint.id, scopedRecords(scope));
+        batch.validate(checkpoints);
+        return {
+            clientBatchId: batch.clientBatchId, checkpointId: batch.checkpointId, createdAt: batch.createdAt,
+            attempts: 0, resource: SyncBatchAssembler.toResourceFromEntity(batch),
+        };
+    }
+
+    async function send(scope, pending) {
         // Saved before sending, so a reload or a lost response retries the same batch instead of creating a new one.
         pending = { ...pending, attempts: pending.attempts + 1, lastAttemptAt: new Date().toISOString() };
         writeLocal(pendingKey(scope), pending);
@@ -143,14 +181,16 @@ export default defineStore('checkpointSync', () => {
     function synchronize(group, checkpoint, checkpoints = []) {
         return state.run(async () => {
             requireCondition(isGuide(group), 'workflow.errors.forbidden');
-            requireCondition(tracking.entries[group.id]?.session?.status === 'active', 'workflow.errors.notActive');
-            const scope = scopeFor(group);
+            migrateLegacyQueue(group.agencyId);
+            const recovery = findPending(group);
+            const scope = recovery?.scope ?? currentScope(group);
             requireCondition(scope, 'workflow.errors.notActive');
             const key = scopeKey(scope);
             requireCondition(!sending.has(key), 'workflow.errors.syncInProgress');
             sending.add(key);
             try {
-                return await withScopeLock(key, () => send(scope, checkpoint, checkpoints));
+                return await withScopeLock(key, async () => send(scope,
+                    readLocal(pendingKey(scope), null) ?? newBatch(group, scope, checkpoint, checkpoints)));
             } finally {
                 sending.delete(key);
                 revision.value += 1;
@@ -161,12 +201,14 @@ export default defineStore('checkpointSync', () => {
     /** Reads the persisted result again, for example to show the detail of a batch received on another device. */
     function refreshBatch(group, batchId) {
         return state.run(async () => {
-            const scope = scopeFor(group);
-            requireCondition(scope, 'workflow.errors.forbidden');
+            requireCondition(isGuide(group), 'workflow.errors.forbidden');
             const result = SyncBatchAssembler.toResultFromResource((await api.getBatch(batchId)).data);
             requireCondition(result, 'workflow.errors.syncUnconfirmed');
-            const updated = readLocal(historyKey(scope), []).map((item) => item.batchId === batchId ? { ...result } : item);
-            writeLocal(historyKey(scope), updated);
+            for (const scope of guideScopes(group)) {
+                const items = readLocal(historyKey(scope), []);
+                if (items.some((item) => item.batchId === batchId))
+                    writeLocal(historyKey(scope), items.map((item) => item.batchId === batchId ? { ...result } : item));
+            }
             revision.value += 1;
             return result;
         });
@@ -174,10 +216,8 @@ export default defineStore('checkpointSync', () => {
 
     /** Removes a rejected record only on an explicit decision of the guide. */
     function discardRejected(group, clientRecordId) {
-        const scope = scopeFor(group);
-        requireCondition(scope, 'workflow.errors.forbidden');
-        requireCondition(scopedRecords(scope).some((record) => record.id === clientRecordId && record.rejection));
-        removeRecords(scope.agencyId, [clientRecordId]);
+        requireCondition(rejectedRecords(group).some((record) => record.id === clientRecordId));
+        removeRecords(group.agencyId, [clientRecordId]);
         revision.value += 1;
     }
 
@@ -187,11 +227,9 @@ export default defineStore('checkpointSync', () => {
     }
 
     return {
-        telemetry, online, revision, load, synchronize, refreshBatch, discardRejected, pendingBatch, history,
-        lastReceivedAt, pendingCount, rejectedRecords, legacyCount, isSending: (group) => {
-            const scope = scopeFor(group);
-            return Boolean(scope && sending.has(scopeKey(scope))) || state.pending.value > 0;
-        },
+        online, revision, load, prepare, synchronize, refreshBatch, discardRejected, pendingBatch, history,
+        lastReceivedAt, pendingCount, rejectedRecords, legacyCount, syncCheckpoints,
+        isSending: (group) => guideScopes(group).some((scope) => sending.has(scopeKey(scope))) || state.pending.value > 0,
         pending: state.pending, error: state.error,
     };
 });

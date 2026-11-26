@@ -521,7 +521,8 @@
       "check-in": "Checkpoint passage"
     },
     "evaluation": {
-      "pending": "Pending evaluation"
+      "pending": "Pending evaluation",
+      "evaluated": "Evaluated"
     },
     "syncCodes": {
       "Telemetry_InvalidRecordedAt": "Capture time outside the tracking session.",

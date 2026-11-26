@@ -521,7 +521,8 @@
       "check-in": "Paso por checkpoint"
     },
     "evaluation": {
-      "pending": "Evaluación pendiente"
+      "pending": "Evaluación pendiente",
+      "evaluated": "Evaluado"
     },
     "syncCodes": {
       "Telemetry_InvalidRecordedAt": "Hora de captura fuera de la sesión de seguimiento.",

@@ -66,6 +66,14 @@ export function appendRecord(agencyId, record) {
     writeLocal(queueKey(agencyId), [...readLocal(queueKey(agencyId), []), record]);
 }
 
+/** Queues of one user in a group, for every tracking session, including sessions that already ended. */
+export function scopesFor(agencyId, userId, groupId) {
+    return scopeKeys(agencyId).map((key) => key.slice(scopePrefix.length).split('-').map(Number))
+        .filter((parts) => parts.length === 4 && parts.every(isPositiveId))
+        .map(([agency, user, group, session]) => ({ agencyId: agency, userId: user, expeditionGroupId: group, sessionId: session }))
+        .filter((scope) => scope.agencyId === agencyId && scope.userId === userId && scope.expeditionGroupId === groupId);
+}
+
 /** Records of one user and tracking session, in insertion order. */
 export function scopedRecords(scope) { return readLocal(scopeKey(scope), []); }
 
