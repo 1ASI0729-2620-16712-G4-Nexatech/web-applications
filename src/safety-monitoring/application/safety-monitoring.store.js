@@ -5,7 +5,7 @@ import { EarlyWarningAlertAssembler } from '../infrastructure/early-warning-aler
 import { SafetyMonitoringApi } from '../infrastructure/safety-monitoring-api.js';
 import useIamStore from '../../iam/application/iam.store.js';
 import { Roles } from '../../iam/domain/user.entity.js';
-import { ApplicationError } from '../../shared/domain/application-error.js';
+import { ApplicationError, toErrorCode } from '../../shared/domain/application-error.js';
 
 const safetyMonitoringApi = new SafetyMonitoringApi();
 
@@ -17,6 +17,13 @@ const ACTION_ERROR_CODES_BY_STATUS = Object.freeze({
     403: 'workflow.errors.forbidden',
     404: 'workflow.errors.notFound',
     409: 'errors.earlyWarningAlertNotActionable',
+});
+
+/** Message keys for the evaluation endpoint: a 409 means the session is no longer active or is being evaluated. */
+const EVALUATION_ERROR_CODES_BY_STATUS = Object.freeze({
+    403: 'workflow.errors.forbidden',
+    404: 'workflow.errors.notFound',
+    409: 'errors.safetyEvaluationUnavailable',
 });
 
 function byUrgency(first, second) {
@@ -159,7 +166,7 @@ const useSafetyMonitoringStore = defineStore('safetyMonitoring', () => {
             upsert(raised);
             return raised;
         } catch (error) {
-            fail(ACTION_ERROR_CODES_BY_STATUS[error?.response?.status] ?? 'errors.earlyWarningAlertActionFailed');
+            fail(EVALUATION_ERROR_CODES_BY_STATUS[error?.response?.status] ?? toErrorCode(error));
             return [];
         }
     }

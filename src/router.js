@@ -2,9 +2,6 @@ import { authenticationGuard } from './iam/infrastructure/authentication.guard.j
 import { Roles, homeForRole } from './iam/domain/user.entity.js';
 import { readSession } from './iam/infrastructure/iam-session.js';
 import { createRouter, createWebHistory } from 'vue-router';
-import { simulatedOperationsEnabled } from './shared/infrastructure/simulated-operations.js';
-
-const nextSprintView = () => import('./shared/presentation/views/NextSprintView.vue');
 
 const routeListView = () => import(
     './expedition-setup/presentation/views/RouteListView.vue'
@@ -29,9 +26,9 @@ const touristManifestView = () => import(
 const groupProgressDashboardView = () => import(
     './field-tracking/presentation/views/GroupProgressDashboardView.vue'
     );
-const earlyWarningAlertDashboardView = simulatedOperationsEnabled ? () => import(
+const earlyWarningAlertDashboardView = () => import(
     './safety-monitoring/presentation/views/EarlyWarningAlertDashboardView.vue'
-    ) : nextSprintView;
+    );
 const roleSelectionView = () => import(
     './iam/presentation/views/SignInView.vue'
     );

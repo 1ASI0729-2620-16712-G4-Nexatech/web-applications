@@ -43,6 +43,7 @@ async function startHarness(t) {
         open: [alertResource(), alertResource({ id: 32, alertType: 'delay', severity: 'medium', status: 'acknowledged', rule: 'checkpoint_delay', memberId: null, checkpointId: 11, evidence: { observedValue: 95, expectedMinimum: null, expectedMaximum: 60, unit: 'min', recordedAt: '2026-11-10T14:00:00+00:00', sourceRecordId: null, simulated: false }, acknowledgedByUserId: 5, acknowledgedAt: '2026-11-10T14:10:00+00:00' })],
         closed: [alertResource({ id: 30, severity: 'low', status: 'dismissed', closedByUserId: 5, closedAt: '2026-11-10T13:50:00+00:00' })],
         patchStatus: 200,
+        evaluationStatus: 200,
     };
     const server = createHttpServer(async (request, response) => {
         const reply = (status, payload) => {
@@ -64,6 +65,10 @@ async function startHarness(t) {
             const alert = harness.open.find((item) => item.id === Number(status[1]));
             const changed = { ...alert, status: JSON.parse(body).status, closedByUserId: 5, closedAt: '2026-11-10T14:20:00+00:00' };
             return reply(200, changed);
+        }
+        if (request.method === 'POST' && url.pathname === '/api/v1/early-warning-alerts/evaluations') {
+            if (harness.evaluationStatus !== 200) return reply(harness.evaluationStatus, 'Localized message');
+            return reply(200, [alertResource({ id: 33, alertType: 'delay', severity: 'high', rule: 'checkpoint_delay', memberId: null, checkpointId: 12, evidence: { observedValue: 130, expectedMaximum: 90, unit: 'min', recordedAt: '2026-11-10T14:30:00+00:00', simulated: false } })]);
         }
         return reply(404, {});
     });
@@ -178,14 +183,30 @@ test('the store refuses invalid transitions locally and translates the refusals 
     assert.deepEqual(safety.errors.map((error) => error.code), ['errors.earlyWarningAlertNotActionable', 'workflow.errors.notFound']);
 });
 
+test('a guide asks the server to evaluate delays now; a refused evaluation explains why', async (t) => {
+    const harness = await startHarness(t);
+    const safety = harness.signIn();
+    const raised = await safety.requestEvaluation(42);
+    assert.deepEqual(raised.map((alert) => alert.id), [33]);
+    assert.equal(safety.getEarlyWarningAlertsByGroupId(18)[0].evidence.expectedValue, '≤ 90 min');
+    const evaluation = harness.requests.find((request) => request.method === 'POST');
+    assert.equal(evaluation.url, '/api/v1/early-warning-alerts/evaluations');
+    assert.deepEqual(evaluation.body, { sessionId: 42 });
+
+    harness.evaluationStatus = 409;
+    assert.deepEqual(await safety.requestEvaluation(42), []);
+    assert.deepEqual(safety.errors.map((error) => error.code), ['errors.safetyEvaluationUnavailable']);
+});
+
 test('a tourist reads alerts but cannot act on them', async (t) => {
     const harness = await startHarness(t);
     const safety = harness.signIn(harness.Roles.TOURIST);
     assert.equal(safety.canManageAlerts, false);
     await safety.fetchEarlyWarningAlerts();
     assert.equal(await safety.acknowledgeAlert(31), null);
-    assert.equal(harness.requests.some((request) => request.method === 'PATCH'), false);
-    assert.deepEqual(safety.errors.map((error) => error.code), ['workflow.errors.forbidden']);
+    assert.deepEqual(await safety.requestEvaluation(42), []);
+    assert.equal(harness.requests.some((request) => ['PATCH', 'POST'].includes(request.method)), false);
+    assert.deepEqual(safety.errors.map((error) => error.code), ['workflow.errors.forbidden', 'workflow.errors.forbidden']);
 });
 
 test('every alert code shown by the views has a text in English and Spanish', async () => {
@@ -204,8 +225,9 @@ test('every alert code shown by the views has a text in English and Spanish', as
         for (const [group, keys] of Object.entries(codes)) {
             for (const key of keys) assert.equal(typeof alerts[group]?.[key], 'string', `${language}: earlyWarningAlerts.${group}.${key}`);
         }
-        for (const key of ['raisedAt', 'capturedAt', 'simulatedNotice', 'groupRisk', 'participant', 'refresh']) {
+        for (const key of ['raisedAt', 'capturedAt', 'simulatedNotice', 'groupRisk', 'participant', 'refresh', 'sessionTitle', 'evaluateNow', 'noSession', 'noSessionAlerts']) {
             assert.equal(typeof alerts[key], 'string', `${language}: earlyWarningAlerts.${key}`);
         }
+        assert.equal(typeof messages.errors.safetyEvaluationUnavailable, 'string', `${language}: errors.safetyEvaluationUnavailable`);
     }
 });

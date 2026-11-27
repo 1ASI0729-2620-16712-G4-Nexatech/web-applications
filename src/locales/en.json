@@ -133,7 +133,8 @@
     "groupProgressFetchFailed": "Progress data could not be loaded.",
     "earlyWarningAlertsFetchFailed": "Early warning alerts could not be loaded.",
     "earlyWarningAlertActionFailed": "The early warning alert could not be updated.",
-    "earlyWarningAlertNotActionable": "This alert is already closed and no longer accepts actions."
+    "earlyWarningAlertNotActionable": "This alert is already closed and no longer accepts actions.",
+    "safetyEvaluationUnavailable": "The session is no longer active or is already being evaluated. Refresh and try again."
   },
   "checkpoints": {
     "title": "Checkpoints",
@@ -299,7 +300,11 @@
       "you": "you",
       "user": "user {id}",
       "unknownUser": "an unrecorded user"
-    }
+    },
+    "sessionTitle": "Safety alerts of this session",
+    "evaluateNow": "Evaluate delays now",
+    "noSession": "Alerts appear here once the tracking session starts.",
+    "noSessionAlerts": "No alerts have been raised for this session."
   },
   "operationsDashboard": {
     "eyebrow": "Operations overview",
