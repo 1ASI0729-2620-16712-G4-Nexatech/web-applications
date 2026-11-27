@@ -17,5 +17,7 @@ const errorCodesByStatus = {
 /** Translates application errors and API responses into i18n message keys. */
 export function toErrorCode(cause) {
     if (typeof cause?.code === 'string' && cause.code.startsWith('workflow.')) return cause.code;
+    // Bounded contexts translate their coded API refusals into their own i18n keys.
+    if (cause instanceof ApplicationError && typeof cause.code === 'string') return cause.code;
     return errorCodesByStatus[cause?.response?.status] ?? 'workflow.errors.requestFailed';
 }
