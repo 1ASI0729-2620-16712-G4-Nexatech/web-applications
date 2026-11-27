@@ -74,12 +74,18 @@ test('every consecutive segment needs a valid expected time window, in checkpoin
     );
 });
 
-test('duration units and draft explanations have a text in English and Spanish', async () => {
+test('duration units, draft explanations and route readiness have a text in English and Spanish', async () => {
     const keys = [
         'duration.days', 'duration.hours', 'duration.minutes',
         'routeForm.estimatedDuration', 'routeForm.days', 'routeForm.hours', 'routeForm.durationTotal',
         'routes.draftNeedsCheckpoint', 'routes.draftReadyToEnable', 'routes.status.draft', 'routes.status.enabled',
         'validation.durationInvalid', 'validation.durationPartsInvalid',
+        'expectedTimeWindows.minimumTime', 'expectedTimeWindows.maximumTime', 'expectedTimeWindows.hours',
+        'expectedTimeWindows.minutes', 'expectedTimeWindows.preview',
+        'validation.timePartsInvalid', 'validation.maximumTimeInvalid',
+        ...['title', 'enableTitle', 'enableNote', 'startTitle', 'startNote', 'met', 'notMet', 'checkpoint', 'enabled',
+            'twoCheckpoints', 'timeWindows', 'missingWindows', 'protocol', 'participants']
+            .map((key) => `checkpoints.readiness.${key}`),
     ];
     for (const language of ['en', 'es']) {
         const messages = JSON.parse(await readFile(new URL(`../src/locales/${language}.json`, import.meta.url), 'utf8'));
