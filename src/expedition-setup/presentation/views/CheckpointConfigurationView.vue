@@ -4,6 +4,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Checkpoint } from '../../domain/model/checkpoint.entity.js';
 import useExpeditionSetupStore from '../../application/expedition-setup.store.js';
+import {
+  GROUP_START_REQUIREMENTS,
+  enablementRequirements,
+  routeStartRequirements,
+} from '../../domain/model/route-readiness.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -42,8 +47,16 @@ const isRouteEnabled = computed(() => (
     selectedRoute.value?.status === 'enabled'
 ));
 const isLoading = computed(() => (
-    !store.routesLoaded || !store.checkpointsLoaded
+    !store.routesLoaded || !store.checkpointsLoaded || !store.expectedTimeWindowsLoaded
 ));
+
+/** What enabling the route requires, and what an expedition on it additionally requires to start. */
+const enableChecklist = computed(() => enablementRequirements({ checkpoints: checkpoints.value }));
+const startChecklist = computed(() => routeStartRequirements({
+  route: selectedRoute.value,
+  checkpoints: checkpoints.value,
+  windows: store.getExpectedTimeWindowsByRouteId(routeId),
+}));
 
 function validateForm() {
   fieldErrors.location = '';
@@ -127,6 +140,7 @@ onMounted(() => {
   Promise.all([
     store.fetchRoutes(),
     store.fetchCheckpoints(),
+    store.fetchExpectedTimeWindows(),
   ]).then(() => {
     if (!selectedRoute.value) {
       goBackToRoutes();
@@ -220,6 +234,49 @@ onMounted(() => {
           </small>
         </div>
       </article>
+
+      <section class="readiness-card" :aria-label="t('checkpoints.readiness.title')">
+        <div>
+          <h3>{{ t('checkpoints.readiness.enableTitle') }}</h3>
+          <ul class="readiness-list">
+            <li v-for="item in enableChecklist" :key="item.key" :class="{ met: item.met }">
+              <i
+                  class="pi"
+                  :class="item.met ? 'pi-check-circle' : 'pi-circle'"
+                  role="img"
+                  :aria-label="t(item.met ? 'checkpoints.readiness.met' : 'checkpoints.readiness.notMet')"
+              />
+              {{ t(`checkpoints.readiness.${item.key}`) }}
+            </li>
+          </ul>
+          <p class="readiness-note">{{ t('checkpoints.readiness.enableNote') }}</p>
+        </div>
+
+        <div>
+          <h3>{{ t('checkpoints.readiness.startTitle') }}</h3>
+          <ul class="readiness-list">
+            <li v-for="item in startChecklist" :key="item.key" :class="{ met: item.met }">
+              <i
+                  class="pi"
+                  :class="item.met ? 'pi-check-circle' : 'pi-circle'"
+                  role="img"
+                  :aria-label="t(item.met ? 'checkpoints.readiness.met' : 'checkpoints.readiness.notMet')"
+              />
+              <span>
+                {{ t(`checkpoints.readiness.${item.key}`) }}
+                <template v-if="item.missing">
+                  · {{ t('checkpoints.readiness.missingWindows', { count: item.missing }) }}
+                </template>
+              </span>
+            </li>
+            <li v-for="key in GROUP_START_REQUIREMENTS" :key="key" class="group-requirement">
+              <i class="pi pi-users" aria-hidden="true" />
+              {{ t(`checkpoints.readiness.${key}`) }}
+            </li>
+          </ul>
+          <p class="readiness-note">{{ t('checkpoints.readiness.startNote') }}</p>
+        </div>
+      </section>
 
       <div class="checkpoint-content">
         <form class="checkpoint-form-card" @submit.prevent="submitForm">
@@ -438,6 +495,63 @@ h3 {
   color: #157347;
 }
 
+.readiness-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--vt-border);
+  border-radius: 1.1rem;
+  background: #ffffff;
+  box-shadow: 0 0.75rem 1.8rem rgb(15 41 55 / 6%);
+}
+
+.readiness-card h3 {
+  margin: 0 0 0.75rem;
+  color: var(--vt-text);
+  font-size: 1rem;
+}
+
+.readiness-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  color: var(--vt-muted);
+  font-size: 0.85rem;
+  list-style: none;
+}
+
+.readiness-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.readiness-list li i {
+  margin-top: 0.15rem;
+  color: #9b5b00;
+}
+
+.readiness-list li.met {
+  color: var(--vt-text);
+}
+
+.readiness-list li.met i {
+  color: #157347;
+}
+
+.readiness-list li.group-requirement i {
+  color: var(--vt-teal);
+}
+
+.readiness-note {
+  margin: 0.75rem 0 0;
+  color: var(--vt-muted);
+  font-size: 0.8rem;
+}
+
 .checkpoint-content {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -578,7 +692,8 @@ h3 {
     flex-direction: column;
   }
 
-  .checkpoint-content {
+  .checkpoint-content,
+  .readiness-card {
     grid-template-columns: 1fr;
   }
 

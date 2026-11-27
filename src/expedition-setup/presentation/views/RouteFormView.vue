@@ -3,11 +3,14 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { Route } from '../../domain/model/route.entity.js';
+import { Duration } from '../../domain/model/duration.js';
+import { useDurationFormat } from '../use-duration-format.js';
 import useExpeditionSetupStore from '../../application/expedition-setup.store.js';
 
 const router = useRouter();
 const { t } = useI18n();
 const store = useExpeditionSetupStore();
+const { formatDaysAndHours } = useDurationFormat();
 onMounted(() => store.fetchRoutes());
 
 const form = reactive({
@@ -17,12 +20,20 @@ const form = reactive({
   distanceKm: null,
   elevationGainMeters: null,
   difficulty: null,
-  estimatedDurationHours: null,
+  durationDays: null,
+  durationHours: null,
 });
 
 const fieldErrors = ref({});
 const submissionErrorKey = ref('');
 const isSubmitting = ref(false);
+
+/** The duration entered in days and hours, or null while a part is not a valid whole number. */
+const estimatedDuration = computed(() => Duration.fromDaysAndHours(form.durationDays, form.durationHours));
+
+const durationTotal = computed(() => (
+  estimatedDuration.value?.totalMinutes > 0 ? formatDaysAndHours(estimatedDuration.value.totalMinutes) : ''
+));
 
 const difficulties = computed(() => [
   { label: t('routes.difficulty.Beginner'), value: 'Beginner' },
@@ -48,8 +59,10 @@ function validateForm() {
 
   if (!form.difficulty) errors.difficulty = 'validation.difficultyRequired';
 
-  if (!Number.isFinite(form.estimatedDurationHours) || form.estimatedDurationHours <= 0) {
-    errors.estimatedDurationHours = 'validation.durationInvalid';
+  if (!estimatedDuration.value) {
+    errors.estimatedDuration = 'validation.durationPartsInvalid';
+  } else if (estimatedDuration.value.totalMinutes <= 0) {
+    errors.estimatedDuration = 'validation.durationInvalid';
   }
 
   fieldErrors.value = errors;
@@ -72,7 +85,7 @@ async function saveRoute() {
     distanceKm: form.distanceKm,
     elevationGainMeters: form.elevationGainMeters,
     difficulty: form.difficulty,
-    estimatedDurationMinutes: form.estimatedDurationHours * 60,
+    estimatedDurationMinutes: estimatedDuration.value.totalMinutes,
     status: 'draft',
   });
 
@@ -246,22 +259,41 @@ function cancel() {
         </div>
 
         <div class="field-grid">
-          <div class="form-field">
-            <label for="duration">
-              {{ t('routeForm.estimatedDurationHours') }}
-            </label>
-            <pv-input-number
-                id="duration"
-                v-model="form.estimatedDurationHours"
-                :min="1"
-                :invalid="Boolean(fieldErrors.estimatedDurationHours)"
-                class="w-full"
-            />
-            <small v-if="fieldErrors.estimatedDurationHours" class="field-error">
-              <i class="pi pi-exclamation-circle" aria-hidden="true" />
-              {{ t(fieldErrors.estimatedDurationHours) }}
+          <fieldset class="form-field duration-field">
+            <legend>{{ t('routeForm.estimatedDuration') }}</legend>
+            <div class="duration-inputs">
+              <div>
+                <label for="duration-days">{{ t('routeForm.days') }}</label>
+                <pv-input-number
+                    id="duration-days"
+                    v-model="form.durationDays"
+                    :min="0"
+                    :use-grouping="false"
+                    :invalid="Boolean(fieldErrors.estimatedDuration)"
+                    class="w-full"
+                />
+              </div>
+              <div>
+                <label for="duration-hours">{{ t('routeForm.hours') }}</label>
+                <pv-input-number
+                    id="duration-hours"
+                    v-model="form.durationHours"
+                    :min="0"
+                    :max="23"
+                    :use-grouping="false"
+                    :invalid="Boolean(fieldErrors.estimatedDuration)"
+                    class="w-full"
+                />
+              </div>
+            </div>
+            <small v-if="durationTotal" class="field-hint">
+              {{ t('routeForm.durationTotal', { duration: durationTotal }) }}
             </small>
-          </div>
+            <small v-if="fieldErrors.estimatedDuration" class="field-error">
+              <i class="pi pi-exclamation-circle" aria-hidden="true" />
+              {{ t(fieldErrors.estimatedDuration) }}
+            </small>
+          </fieldset>
         </div>
       </section>
 
@@ -395,6 +427,40 @@ h1 {
   color: var(--vt-text);
   font-size: 0.9rem;
   font-weight: 700;
+}
+
+.duration-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.duration-field legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: var(--vt-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.duration-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.duration-inputs label {
+  color: var(--vt-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.field-hint {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--vt-muted);
+  font-size: 0.8rem;
 }
 
 .field-error,

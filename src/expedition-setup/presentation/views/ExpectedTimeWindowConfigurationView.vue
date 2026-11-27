@@ -6,11 +6,14 @@ import {
   ExpectedTimeWindow,
 } from '../../domain/model/expected-time-window.entity.js';
 import useExpeditionSetupStore from '../../application/expedition-setup.store.js';
+import { Duration } from '../../domain/model/duration.js';
+import { useDurationFormat } from '../use-duration-format.js';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const store = useExpeditionSetupStore();
+const { formatHoursAndMinutes } = useDurationFormat();
 
 const routeId = Number(route.params.routeId);
 
@@ -18,14 +21,35 @@ const selectedSegment = ref(null);
 const submissionErrorKey = ref('');
 
 const form = reactive({
+  minimumHours: null,
   minimumMinutes: null,
+  maximumHours: null,
   maximumMinutes: null,
 });
 
 const fieldErrors = reactive({
-  minimumMinutes: '',
-  maximumMinutes: '',
+  minimum: '',
+  maximum: '',
 });
+
+/** Limits entered in hours and minutes, or null while a part is not a valid whole number. */
+const minimumDuration = computed(() => Duration.fromHoursAndMinutes(form.minimumHours, form.minimumMinutes));
+const maximumDuration = computed(() => Duration.fromHoursAndMinutes(form.maximumHours, form.maximumMinutes));
+
+const windowPreview = computed(() => (
+  minimumDuration.value && maximumDuration.value?.isLongerThan(minimumDuration.value)
+      ? `${formatHoursAndMinutes(minimumDuration.value.totalMinutes)} – ${formatHoursAndMinutes(maximumDuration.value.totalMinutes)}`
+      : ''
+));
+
+function resetForm() {
+  fieldErrors.minimum = '';
+  fieldErrors.maximum = '';
+  form.minimumHours = null;
+  form.minimumMinutes = null;
+  form.maximumHours = null;
+  form.maximumMinutes = null;
+}
 
 const selectedRoute = computed(() => (
     store.routes.find((currentRoute) => currentRoute.id === routeId)
@@ -48,31 +72,21 @@ const isLoading = computed(() => (
 function selectSegment(segment) {
   selectedSegment.value = segment;
   submissionErrorKey.value = '';
-  fieldErrors.minimumMinutes = '';
-  fieldErrors.maximumMinutes = '';
-  form.minimumMinutes = null;
-  form.maximumMinutes = null;
+  resetForm();
 }
 
 function validateForm() {
-  fieldErrors.minimumMinutes = '';
-  fieldErrors.maximumMinutes = '';
+  fieldErrors.minimum = minimumDuration.value ? '' : 'validation.timePartsInvalid';
 
-  if (
-      !Number.isFinite(form.minimumMinutes)
-      || form.minimumMinutes < 0
-  ) {
-    fieldErrors.minimumMinutes = 'validation.minimumTimeInvalid';
+  if (!maximumDuration.value) {
+    fieldErrors.maximum = 'validation.timePartsInvalid';
+  } else if (minimumDuration.value && !maximumDuration.value.isLongerThan(minimumDuration.value)) {
+    fieldErrors.maximum = 'validation.maximumTimeInvalid';
+  } else {
+    fieldErrors.maximum = '';
   }
 
-  if (
-      !Number.isFinite(form.maximumMinutes)
-      || form.maximumMinutes <= form.minimumMinutes
-  ) {
-    fieldErrors.maximumMinutes = 'validation.maximumTimeInvalid';
-  }
-
-  return !fieldErrors.minimumMinutes && !fieldErrors.maximumMinutes;
+  return !fieldErrors.minimum && !fieldErrors.maximum;
 }
 
 function saveExpectedTimeWindow() {
@@ -87,16 +101,15 @@ function saveExpectedTimeWindow() {
     routeId,
     fromCheckpointId: selectedSegment.value.fromCheckpoint.id,
     toCheckpointId: selectedSegment.value.toCheckpoint.id,
-    minimumMinutes: form.minimumMinutes,
-    maximumMinutes: form.maximumMinutes,
+    minimumMinutes: minimumDuration.value.totalMinutes,
+    maximumMinutes: maximumDuration.value.totalMinutes,
   });
 
   store.addExpectedTimeWindow(expectedTimeWindow)
       .then((newExpectedTimeWindow) => {
         if (newExpectedTimeWindow) {
           selectedSegment.value = null;
-          form.minimumMinutes = null;
-          form.maximumMinutes = null;
+          resetForm();
           return;
         }
 
@@ -197,50 +210,82 @@ onMounted(() => {
 
         <form @submit.prevent="saveExpectedTimeWindow">
           <div class="form-grid">
-            <div class="form-field">
-              <label for="minimum-minutes">
-                {{ t('expectedTimeWindows.minimumMinutes') }}
-              </label>
-
-              <pv-input-number
-                  id="minimum-minutes"
-                  v-model="form.minimumMinutes"
-                  :min="0"
-                  :use-grouping="false"
-                  :invalid="Boolean(fieldErrors.minimumMinutes)"
-                  fluid
-              />
-
-              <small
-                  v-if="fieldErrors.minimumMinutes"
-                  class="field-error"
-              >
-                {{ t(fieldErrors.minimumMinutes) }}
-              </small>
-            </div>
-
-            <div class="form-field">
-              <label for="maximum-minutes">
-                {{ t('expectedTimeWindows.maximumMinutes') }}
-              </label>
-
-              <pv-input-number
-                  id="maximum-minutes"
-                  v-model="form.maximumMinutes"
-                  :min="0"
-                  :use-grouping="false"
-                  :invalid="Boolean(fieldErrors.maximumMinutes)"
-                  fluid
-              />
+            <fieldset class="form-field time-field">
+              <legend>{{ t('expectedTimeWindows.minimumTime') }}</legend>
+              <div class="time-inputs">
+                <div>
+                  <label for="minimum-hours">{{ t('expectedTimeWindows.hours') }}</label>
+                  <pv-input-number
+                      id="minimum-hours"
+                      v-model="form.minimumHours"
+                      :min="0"
+                      :use-grouping="false"
+                      :invalid="Boolean(fieldErrors.minimum)"
+                      fluid
+                  />
+                </div>
+                <div>
+                  <label for="minimum-minutes">{{ t('expectedTimeWindows.minutes') }}</label>
+                  <pv-input-number
+                      id="minimum-minutes"
+                      v-model="form.minimumMinutes"
+                      :min="0"
+                      :max="59"
+                      :use-grouping="false"
+                      :invalid="Boolean(fieldErrors.minimum)"
+                      fluid
+                  />
+                </div>
+              </div>
 
               <small
-                  v-if="fieldErrors.maximumMinutes"
+                  v-if="fieldErrors.minimum"
                   class="field-error"
               >
-                {{ t(fieldErrors.maximumMinutes) }}
+                {{ t(fieldErrors.minimum) }}
               </small>
-            </div>
+            </fieldset>
+
+            <fieldset class="form-field time-field">
+              <legend>{{ t('expectedTimeWindows.maximumTime') }}</legend>
+              <div class="time-inputs">
+                <div>
+                  <label for="maximum-hours">{{ t('expectedTimeWindows.hours') }}</label>
+                  <pv-input-number
+                      id="maximum-hours"
+                      v-model="form.maximumHours"
+                      :min="0"
+                      :use-grouping="false"
+                      :invalid="Boolean(fieldErrors.maximum)"
+                      fluid
+                  />
+                </div>
+                <div>
+                  <label for="maximum-minutes">{{ t('expectedTimeWindows.minutes') }}</label>
+                  <pv-input-number
+                      id="maximum-minutes"
+                      v-model="form.maximumMinutes"
+                      :min="0"
+                      :max="59"
+                      :use-grouping="false"
+                      :invalid="Boolean(fieldErrors.maximum)"
+                      fluid
+                  />
+                </div>
+              </div>
+
+              <small
+                  v-if="fieldErrors.maximum"
+                  class="field-error"
+              >
+                {{ t(fieldErrors.maximum) }}
+              </small>
+            </fieldset>
           </div>
+
+          <p v-if="windowPreview" class="window-preview">
+            {{ t('expectedTimeWindows.preview', { window: windowPreview }) }}
+          </p>
 
           <p v-if="submissionErrorKey" class="request-error">
             {{ t(submissionErrorKey) }}
@@ -298,10 +343,9 @@ onMounted(() => {
               </span>
 
               <strong>
-                {{ segment.expectedTimeWindow.minimumMinutes }}
+                {{ formatHoursAndMinutes(segment.expectedTimeWindow.minimumMinutes) }}
                 –
-                {{ segment.expectedTimeWindow.maximumMinutes }}
-                min
+                {{ formatHoursAndMinutes(segment.expectedTimeWindow.maximumMinutes) }}
               </strong>
             </div>
 
@@ -604,5 +648,40 @@ h3 {
     justify-items: start;
     padding-left: 3rem;
   }
+}
+
+.time-field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.time-field legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: var(--vt-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.time-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.time-inputs label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--vt-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.window-preview {
+  margin: 0.75rem 0 0;
+  color: var(--vt-muted);
+  font-size: 0.85rem;
 }
 </style>
