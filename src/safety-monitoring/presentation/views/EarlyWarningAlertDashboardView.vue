@@ -1,14 +1,17 @@
 <script setup>
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import useExpeditionSetupStore from '../../../expedition-setup/application/expedition-setup.store.js';
+import useIamStore from '../../../iam/application/iam.store.js';
 import useSafetyMonitoringStore from '../../application/safety-monitoring.store.js';
+import EarlyWarningAlertCard from '../components/EarlyWarningAlertCard.vue';
+import { useAlertActions } from '../use-alert-actions.js';
 
 const { t } = useI18n();
 const expeditionSetupStore = useExpeditionSetupStore();
+const iamStore = useIamStore();
 const safetyMonitoringStore = useSafetyMonitoringStore();
-
-const actionErrorKeys = reactive({});
+const { errorKeys, pending, changeStatus, userLabel } = useAlertActions();
 
 const isLoading = computed(() => (
     !expeditionSetupStore.expeditionGroupsLoaded
@@ -25,67 +28,36 @@ const groupAlertRows = computed(() => (
           expeditionGroup.id,
       );
 
+      // Alerts are sorted by urgency, so the first open one carries the current risk of the group.
+      const highestOpenAlert = alerts.find((alert) => alert.isOpen);
+
       return {
         expeditionGroup,
         routeName: route?.name ?? '',
+        risk: highestOpenAlert?.priority ?? '',
         alerts,
       };
     }).filter((row) => row.alerts.length > 0)
 ));
 
-function getTypeLabel(type) {
-  return t(`earlyWarningAlerts.type.${type}`);
+function memberName(alert) {
+  if (alert.memberId == null) return '';
+  return expeditionSetupStore.manifestEntries.find((entry) => entry.id === alert.memberId)?.fullName
+      ?? t('earlyWarningAlerts.participant', { id: alert.memberId });
 }
 
-function getPriorityLabel(priority) {
-  return t(`earlyWarningAlerts.priority.${priority}`);
-}
-
-function getStatusLabel(status) {
-  return t(`earlyWarningAlerts.status.${status}`);
-}
-
-function acknowledgeAlert(alertId) {
-  actionErrorKeys[alertId] = '';
-  safetyMonitoringStore.clearErrors();
-
-  safetyMonitoringStore.acknowledgeAlert(alertId).then((updatedAlert) => {
-    if (!updatedAlert) {
-      actionErrorKeys[alertId] = safetyMonitoringStore.errors.at(-1)?.code
-          ?? 'errors.earlyWarningAlertActionFailed';
-    }
-  });
-}
-
-function resolveAlert(alertId) {
-  actionErrorKeys[alertId] = '';
-  safetyMonitoringStore.clearErrors();
-
-  safetyMonitoringStore.resolveAlert(alertId).then((updatedAlert) => {
-    if (!updatedAlert) {
-      actionErrorKeys[alertId] = safetyMonitoringStore.errors.at(-1)?.code
-          ?? 'errors.earlyWarningAlertActionFailed';
-    }
-  });
-}
-
-function dismissAlertAsFalseAlarm(alertId) {
-  actionErrorKeys[alertId] = '';
-  safetyMonitoringStore.clearErrors();
-
-  safetyMonitoringStore.dismissAlertAsFalseAlarm(alertId).then((updatedAlert) => {
-    if (!updatedAlert) {
-      actionErrorKeys[alertId] = safetyMonitoringStore.errors.at(-1)?.code
-          ?? 'errors.earlyWarningAlertActionFailed';
-    }
-  });
+function refresh() {
+  return safetyMonitoringStore.fetchEarlyWarningAlerts();
 }
 
 onMounted(() => {
   Promise.all([
     expeditionSetupStore.fetchRoutes(),
     expeditionSetupStore.fetchExpeditionGroups(),
+    expeditionSetupStore.fetchManifestEntries(),
     safetyMonitoringStore.fetchEarlyWarningAlerts(),
+    // Names of the users in the audit; only an administrator can read the accounts of the agency.
+    ...(iamStore.isAdmin ? [iamStore.fetchUsers().catch(() => null)] : []),
   ]);
 });
 </script>
@@ -99,14 +71,26 @@ onMounted(() => {
         <p>{{ t('earlyWarningAlerts.description') }}</p>
       </div>
 
-      <span class="active-count-tag">
-        <i class="pi pi-bell" />
-        {{
-          t('earlyWarningAlerts.activeCount', {
-            count: safetyMonitoringStore.activeEarlyWarningAlertsCount,
-          })
-        }}
-      </span>
+      <div class="view-header-actions">
+        <span class="active-count-tag">
+          <i class="pi pi-bell" />
+          {{
+            t('earlyWarningAlerts.activeCount', {
+              count: safetyMonitoringStore.activeEarlyWarningAlertsCount,
+            })
+          }}
+        </span>
+        <pv-button
+            type="button"
+            icon="pi pi-refresh"
+            :label="t('earlyWarningAlerts.refresh')"
+            size="small"
+            severity="secondary"
+            outlined
+            :disabled="isLoading"
+            @click="refresh"
+        />
+      </div>
     </header>
 
     <p v-if="isLoading" class="loading-message">
@@ -125,81 +109,23 @@ onMounted(() => {
               <h2>{{ row.expeditionGroup.name }}</h2>
               <p>{{ row.routeName }} · {{ row.expeditionGroup.departureDate }}</p>
             </div>
+            <span v-if="row.risk" class="group-risk-tag" :class="row.risk">
+              {{ t('earlyWarningAlerts.groupRisk') }}: {{ t(`earlyWarningAlerts.priority.${row.risk}`) }}
+            </span>
           </header>
 
           <div class="alert-list">
-            <article
+            <EarlyWarningAlertCard
                 v-for="alert in row.alerts"
                 :key="alert.id"
-                class="alert-item"
-            >
-              <div class="alert-item-header">
-                <div class="alert-item-tags">
-                  <span class="priority-tag" :class="alert.priority">
-                    <i class="pi pi-exclamation-triangle" />
-                    {{ getPriorityLabel(alert.priority) }}
-                  </span>
-
-                  <span class="status-tag" :class="alert.status">
-                    {{ getStatusLabel(alert.status) }}
-                  </span>
-                </div>
-
-                <span class="alert-triggered-at">{{ alert.triggeredAt }}</span>
-              </div>
-
-              <h3>{{ getTypeLabel(alert.type) }}</h3>
-
-              <div v-if="alert.riskEvidence.length" class="evidence-list">
-                <div
-                    v-for="(evidence, index) in alert.riskEvidence"
-                    :key="index"
-                    class="evidence-item"
-                >
-                  <span>{{ evidence.metricType }}</span>
-                  <strong>
-                    {{ t('earlyWarningAlerts.observedValue') }}: {{ evidence.observedValue }}
-                    ·
-                    {{ t('earlyWarningAlerts.expectedValue') }}: {{ evidence.expectedValue }}
-                  </strong>
-                </div>
-              </div>
-
-              <p v-if="actionErrorKeys[alert.id]" class="request-error">
-                {{ t(actionErrorKeys[alert.id]) }}
-              </p>
-
-              <div
-                  v-if="safetyMonitoringStore.isAlertActionable(alert.status)"
-                  class="alert-actions"
-              >
-                <pv-button
-                    v-if="alert.status === 'active'"
-                    type="button"
-                    :label="t('earlyWarningAlerts.acknowledge')"
-                    size="small"
-                    severity="secondary"
-                    outlined
-                    @click="acknowledgeAlert(alert.id)"
-                />
-
-                <pv-button
-                    type="button"
-                    :label="t('earlyWarningAlerts.resolve')"
-                    size="small"
-                    @click="resolveAlert(alert.id)"
-                />
-
-                <pv-button
-                    type="button"
-                    :label="t('earlyWarningAlerts.dismissAsFalseAlarm')"
-                    size="small"
-                    severity="danger"
-                    outlined
-                    @click="dismissAlertAsFalseAlarm(alert.id)"
-                />
-              </div>
-            </article>
+                :alert="alert"
+                :member-name="memberName(alert)"
+                :can-manage="safetyMonitoringStore.canManageAlerts"
+                :busy="Boolean(pending[alert.id])"
+                :error-key="errorKeys[alert.id] ?? ''"
+                :user-label="userLabel"
+                @change-status="(status) => changeStatus(alert, status)"
+            />
           </div>
         </article>
       </div>
@@ -301,117 +227,50 @@ h3 {
   font-size: 0.85rem;
 }
 
-.alert-list {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.alert-item {
-  display: grid;
-  gap: 0.6rem;
-  padding: 1rem;
-  border: 1px solid var(--vt-border);
-  border-radius: 0.875rem;
-  background: var(--vt-surface-soft);
-}
-
-.alert-item h3 {
-  font-size: 1rem;
-}
-
-.alert-item-header {
+.view-header-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
 }
 
-.alert-item-tags {
+.alert-group-header {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.alert-triggered-at {
-  color: var(--vt-muted);
-  font-size: 0.78rem;
-}
-
-.priority-tag,
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.35rem 0.7rem;
+.group-risk-tag {
+  padding: 0.35rem 0.75rem;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
 }
 
-.priority-tag.low {
+.group-risk-tag.low {
   background: #e6f8ef;
   color: #157347;
 }
 
-.priority-tag.medium {
+.group-risk-tag.medium {
   background: #fff4dc;
   color: #9b5b00;
 }
 
-.priority-tag.high {
+.group-risk-tag.high {
   background: #fdeceb;
   color: var(--vt-danger);
 }
 
-.status-tag.active {
-  background: #fdeceb;
-  color: var(--vt-danger);
+.group-risk-tag.critical {
+  background: var(--vt-danger);
+  color: #ffffff;
 }
 
-.status-tag.acknowledged {
-  background: #fff4dc;
-  color: #9b5b00;
-}
-
-.status-tag.resolved,
-.status-tag.dismissed {
-  background: #e6f8ef;
-  color: #157347;
-}
-
-.evidence-list {
+.alert-list {
   display: grid;
-  gap: 0.4rem;
-}
-
-.evidence-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-size: 0.82rem;
-}
-
-.evidence-item span {
-  color: var(--vt-muted);
-}
-
-.evidence-item strong {
-  color: var(--vt-text);
-  text-align: right;
-}
-
-.request-error {
-  margin: 0;
-  color: #b42318;
-  font-size: 0.8rem;
-}
-
-.alert-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.6rem;
+  gap: 0.9rem;
 }
 
 .empty-state {
@@ -437,19 +296,10 @@ h3 {
     padding: 2rem 1.25rem;
   }
 
-  .view-header {
+  .view-header,
+  .alert-group-header {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .alert-item-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .alert-actions {
-    justify-content: flex-start;
   }
 }
 </style>

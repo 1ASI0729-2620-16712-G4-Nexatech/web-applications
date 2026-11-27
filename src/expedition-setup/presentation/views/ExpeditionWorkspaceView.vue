@@ -14,6 +14,7 @@ import useIamStore from '../../../iam/application/iam.store.js';
 import PreparationPanel from '../components/PreparationPanel.vue';
 import { ParticipantPreparation } from '../../domain/model/participant-preparation.entity.js';
 import TrackingPanel from '../../../field-tracking/presentation/components/TrackingPanel.vue';
+import GroupAlertsPanel from '../../../safety-monitoring/presentation/components/GroupAlertsPanel.vue';
 import SyncPanel from '../../../checkpoint-sync/presentation/components/SyncPanel.vue';
 import IncidentPanel from '../../../incident-response/presentation/components/IncidentPanel.vue';
 import ClosurePanel from '../../../tour-closure/presentation/components/ClosurePanel.vue';
@@ -41,12 +42,13 @@ const checkpoints = computed(() => setup.getCheckpointsByRouteId(group.value?.ro
 const segments = computed(() => setup.getRouteSegments(group.value?.routeId));
 const protocol = computed(() => prep.protocols.find((p) => p.routeId === group.value?.routeId));
 const notes = computed(() => prep.notes.filter((n) => n.routeId === group.value?.routeId));
+const trackingSession = computed(() => tracking.entries[id]?.session ?? null);
 const key = `vitaltrek-workspace-${iam.user.id}-${id}`;
 async function refresh() {
     setup.clearErrors();
     safety.clearErrors();
     const simulatedLoad = simulatedOperationsEnabled
-        ? Promise.allSettled([sync.load(), safety.fetchEarlyWarningAlerts(), incidents.load(), closure.load()])
+        ? Promise.allSettled([sync.load(), incidents.load(), closure.load()])
         : null;
     await Promise.all([
         setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(),
@@ -55,6 +57,7 @@ async function refresh() {
     requireCondition(!setup.errors.length, 'workflow.errors.requestFailed');
     requireCondition(group.value, 'workflow.errors.forbidden');
     if (hasTracking.value) await tracking.fetchGroupProgress(group.value);
+    if (trackingSession.value?.sessionId) await safety.fetchAlertsForSession(trackingSession.value.sessionId);
     await simulatedLoad;
     offline.value = false;
     writeLocal(key, { savedAt: new Date().toISOString(), group: group.value, route: routeEntity.value, members: members.value, checkpoints: checkpoints.value, windows: setup.getExpectedTimeWindowsByRouteId(group.value.routeId), preparations: prep.preparations.filter((p) => p.expeditionGroupId === id), notes: notes.value, protocol: protocol.value, incidents: incidents.incidents.filter((i) => i.expeditionGroupId === id), summaries: closure.summaries.filter((s) => s.expeditionGroupId === id) });
@@ -92,7 +95,11 @@ onMounted(load);
     <template v-if="group && !busy">
       <nav class="vt-tabs" :aria-label="t('workflow.expeditionSections')"><button v-for="item in ['preparation', 'tracking', 'sync', 'incidents', 'closure']" :key="item" :class="{ active: tab === item }" :aria-current="tab === item ? 'page' : undefined" @click="tab = item">{{ t(`workflow.${item}`) }}</button></nav>
       <PreparationPanel v-if="tab === 'preparation'" />
-      <TrackingPanel v-else-if="tab === 'tracking'" />
+      <template v-else-if="tab === 'tracking'">
+        <TrackingPanel />
+        <GroupAlertsPanel :group="group" :members="members" :session-id="trackingSession?.sessionId ?? null"
+                          :session-active="trackingSession?.status === 'active'" />
+      </template>
       <SyncPanel v-else-if="tab === 'sync' && hasTracking" />
       <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <SyncPanel v-else-if="tab === 'sync'" />

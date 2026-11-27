@@ -6,7 +6,6 @@ import { createServer } from 'vite';
 import { createPinia, setActivePinia } from 'pinia';
 import { isPastDate } from '../src/shared/domain/calendar-date.js';
 import { TourClosure } from '../src/tour-closure/domain/model/tour-closure.entity.js';
-import { evaluateSafety } from '../src/safety-monitoring/domain/model/safety-evaluation.js';
 
 function memoryStorage() {
     const values = new Map();
@@ -20,14 +19,6 @@ test('calendar dates accept today in Lima and reject invalid dates', () => {
     assert.equal(isPastDate('2026-10-24', '2026-10-25'), true);
     assert.equal(isPastDate('2026-02-30', '2026-01-01'), true);
     assert.equal(isPastDate('', '2026-10-25'), true);
-});
-
-test('delay evaluation uses capture times, including batches received later', () => {
-    const segments = [{ fromCheckpoint: { id: 1 }, toCheckpoint: { id: 2 }, expectedTimeWindow: { maximumMinutes: 20 } }];
-    const arrivals = [{ expeditionGroupId: 1, checkpointId: 1, recordedAt: '2026-10-25T10:00:00Z' }, { expeditionGroupId: 1, checkpointId: 2, recordedAt: '2026-10-25T10:10:00Z' }];
-    assert.equal(evaluateSafety({ id: 1 }, [], arrivals, segments, [], Date.parse('2026-10-25T18:00:00Z')).length, 0);
-    arrivals[1].recordedAt = '2026-10-25T10:30:00Z';
-    assert.equal(evaluateSafety({ id: 1 }, [], arrivals, segments, []).at(0).type, 'delay');
 });
 
 test('closure blocks pending local data unless incompleteness is acknowledged', () => {

@@ -133,7 +133,8 @@
     "groupProgressFetchFailed": "Progress data could not be loaded.",
     "earlyWarningAlertsFetchFailed": "Early warning alerts could not be loaded.",
     "earlyWarningAlertActionFailed": "The early warning alert could not be updated.",
-    "earlyWarningAlertNotActionable": "This alert is already closed and no longer accepts actions."
+    "earlyWarningAlertNotActionable": "This alert is already closed and no longer accepts actions.",
+    "safetyEvaluationUnavailable": "The session is no longer active or is already being evaluated. Refresh and try again."
   },
   "checkpoints": {
     "title": "Checkpoints",
@@ -260,7 +261,8 @@
     "type": {
       "delay": "Segment delay",
       "vital-sign-anomaly": "Vital sign anomaly",
-      "route-deviation": "Route deviation"
+      "route-deviation": "Route deviation",
+      "other": "Other risk condition"
     },
     "priority": {
       "low": "Low priority",
@@ -273,7 +275,36 @@
       "acknowledged": "Acknowledged",
       "resolved": "Resolved",
       "dismissed": "Dismissed"
-    }
+    },
+    "refresh": "Refresh",
+    "raisedAt": "Raised {time} · {age}",
+    "capturedAt": "Observation time",
+    "simulatedNotice": "Simulated data · demonstration rule",
+    "groupRisk": "Group risk",
+    "participant": "Participant {id}",
+    "rule": {
+      "manual": "Reported manually",
+      "heart_rate_outside_baseline": "Heart rate outside the participant's baseline",
+      "simulated_route_deviation": "Distance from the route above the allowed corridor",
+      "checkpoint_delay": "Segment time above its maximum window"
+    },
+    "metric": {
+      "heart-rate": "Heart rate",
+      "route-position": "Distance from the route",
+      "elapsed-time": "Segment time"
+    },
+    "audit": {
+      "acknowledged": "Acknowledged by {user} · {time}",
+      "resolved": "Resolved by {user} · {time}",
+      "dismissed": "Dismissed by {user} · {time}",
+      "you": "you",
+      "user": "user {id}",
+      "unknownUser": "an unrecorded user"
+    },
+    "sessionTitle": "Safety alerts of this session",
+    "evaluateNow": "Evaluate delays now",
+    "noSession": "Alerts appear here once the tracking session starts.",
+    "noSessionAlerts": "No alerts have been raised for this session."
   },
   "operationsDashboard": {
     "eyebrow": "Operations overview",

@@ -3,18 +3,16 @@ import { computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import useExpeditionSetupStore from '../../../expedition-setup/application/expedition-setup.store.js';
 import useSafetyMonitoringStore from '../../../safety-monitoring/application/safety-monitoring.store.js';
-import { simulatedOperationsEnabled } from '../../infrastructure/simulated-operations.js';
+import { PRIORITY_RANK } from '../../../safety-monitoring/domain/model/early-warning-alert.entity.js';
 
 const { t } = useI18n();
 const expeditionSetupStore = useExpeditionSetupStore();
 const safetyMonitoringStore = useSafetyMonitoringStore();
 
-const PRIORITY_RANK = { high: 3, medium: 2, low: 1 };
-
 const isLoading = computed(() => (
     !expeditionSetupStore.routesLoaded
     || !expeditionSetupStore.expeditionGroupsLoaded
-    || (simulatedOperationsEnabled && !safetyMonitoringStore.earlyWarningAlertsLoaded)
+    || !safetyMonitoringStore.earlyWarningAlertsLoaded
 ));
 
 const enabledRoutesCount = computed(() => (
@@ -65,7 +63,7 @@ const statTiles = computed(() => ([
 
 const topAlerts = computed(() => (
     safetyMonitoringStore.earlyWarningAlerts
-        .filter((alert) => alert.status === 'active' || alert.status === 'acknowledged')
+        .filter((alert) => alert.isOpen)
         .sort((first, second) => (
             PRIORITY_RANK[second.priority] - PRIORITY_RANK[first.priority]
         ))
@@ -98,9 +96,7 @@ onMounted(() => {
   Promise.all([
     expeditionSetupStore.fetchRoutes(),
     expeditionSetupStore.fetchExpeditionGroups(),
-    ...(simulatedOperationsEnabled ? [
-      safetyMonitoringStore.fetchEarlyWarningAlerts(),
-    ] : []),
+    safetyMonitoringStore.fetchEarlyWarningAlerts(),
   ]);
 });
 </script>
@@ -462,6 +458,11 @@ h2 {
 .priority-tag.high {
   background: #fdeceb;
   color: var(--vt-danger);
+}
+
+.priority-tag.critical {
+  background: var(--vt-danger);
+  color: #ffffff;
 }
 
 .status-tag.active {
