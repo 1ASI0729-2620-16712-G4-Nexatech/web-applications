@@ -39,7 +39,7 @@ async function startHarness(t) {
     globalThis.document = { documentElement: {} };
     const harness = {
         requests: [], incidents: new Map([[41, incidentResource()]]), actions: new Map(), notifications: new Map(),
-        offline: false, loseNextResponse: false, nextActionId: 1, notificationMode: 'accept',
+        offline: false, loseNextResponse: false, emptyNextAction: false, nextActionId: 1, notificationMode: 'accept',
     };
     const server = createHttpServer(async (request, response) => {
         let body = '';
@@ -80,6 +80,11 @@ async function startHarness(t) {
         if (actions && request.method === 'GET')
             return reply(200, [...harness.actions.values()].filter((item) => item.incidentId === Number(actions[1])));
         if (actions && request.method === 'POST') {
+            if (harness.emptyNextAction) {
+                harness.emptyNextAction = false;
+                response.writeHead(204);
+                return response.end();
+            }
             const existing = harness.actions.get(payload.clientActionId);
             if (existing && existing.description !== payload.description)
                 return reply(409, { title: 'Conflict', code: 'EvacuationAction.IdentityConflict' });
@@ -349,4 +354,50 @@ test('every incident, health and guide account text exists in English and Spanis
     for (const key of errorKeys) assert.ok(en.incidents.errors[key] && es.incidents.errors[key], key);
     for (const text of [JSON.stringify(en.incidents), JSON.stringify(es.incidents)])
         assert.equal(/[@|]/.test(text), false, 'vue-i18n reserves @ and |');
+});
+
+test('an evacuation action answered with an empty body stays queued until the API returns it', async (t) => {
+    const harness = await startHarness(t);
+    harness.incidents.set(41, incidentResource({ status: 'emergency_declared', emergencyDeclaredAt: '2026-11-27T14:10:00+00:00' }));
+    const { incidents } = harness.signIn(harness.Roles.GUIDE);
+    await incidents.load(group, 42);
+    const queued = incidents.recordEvacuation(group, incidents.incidents[0], { description: 'Group moving to the shelter.' });
+    harness.emptyNextAction = true;
+
+    const empty = await incidents.flushEvacuations(group);
+
+    assert.deepEqual(empty, { sent: 0, rejected: 0 });
+    assert.equal(harness.actions.size, 0);
+    assert.equal(incidents.outbox().length, 1);
+    assert.equal(incidents.outbox()[0].clientActionId, queued.clientActionId);
+
+    const retried = await incidents.flushEvacuations(group);
+
+    assert.deepEqual(retried, { sent: 1, rejected: 0 });
+    assert.equal(incidents.outbox().length, 0);
+    assert.equal(harness.actions.get(queued.clientActionId).description, 'Group moving to the shelter.');
+});
+
+test('each recipient of an incident keeps its own pending request, so a retry never duplicates a notice', async (t) => {
+    const harness = await startHarness(t);
+    harness.incidents.set(41, incidentResource({ status: 'emergency_declared', emergencyDeclaredAt: '2026-11-27T14:10:00+00:00' }));
+    const { incidents } = harness.signIn(harness.Roles.ADMIN);
+    await incidents.load(group, 42);
+    const incident = incidents.incidents[0];
+
+    harness.loseNextResponse = true;
+    await assert.rejects(incidents.requestNotification(group, incident, 'first@vitaltrek.test'));
+    const lost = incidents.pendingNotificationRequests()[41];
+    assert.equal(lost.recipient, 'first@vitaltrek.test');
+
+    const second = await incidents.requestNotification(group, incident, 'second@vitaltrek.test');
+
+    assert.notEqual(second.notificationId, lost.notificationId);
+    assert.equal(incidents.pendingNotificationRequests()[41].notificationId, lost.notificationId);
+
+    const first = await incidents.requestNotification(group, incident, 'first@vitaltrek.test');
+
+    assert.equal(first.notificationId, lost.notificationId);
+    assert.equal(harness.notifications.size, 2);
+    assert.equal(incidents.pendingNotificationRequests()[41], undefined);
 });

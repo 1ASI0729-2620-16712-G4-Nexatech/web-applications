@@ -39,7 +39,32 @@ export default defineStore('incidentResponse', () => {
     function legacyOutbox() { void revision.value; return readLocal(legacyKey(), []); }
     function saveOutbox(records) { writeLocal(outboxKey(), records); revision.value += 1; }
     /** Notification requests whose answer has not been received, by incident. */
-    function pendingNotificationRequests() { void revision.value; return readLocal(requestsKey(), {}); }
+    /**
+     * Requests still waiting for an answer, kept by incident and then by recipient: one incident can lose the answer
+     * of several recipients at once, and each of them has to keep its own identity. Entries written by the previous
+     * version, which kept a single recipient per incident, are read in the current shape.
+     */
+    function pendingRequestsByRecipient() {
+        void revision.value;
+        const stored = readLocal(requestsKey(), {});
+        const requests = {};
+        for (const [incidentId, entry] of Object.entries(stored ?? {})) {
+            if (!entry || typeof entry !== 'object') continue;
+            requests[incidentId] = entry.notificationId && entry.recipient
+                ? { [entry.recipient]: entry.notificationId } : { ...entry };
+        }
+        return requests;
+    }
+
+    /** Oldest request of each incident still waiting for an answer, which is the one the view offers to retry. */
+    function pendingNotificationRequests() {
+        const requests = {};
+        for (const [incidentId, byRecipient] of Object.entries(pendingRequestsByRecipient())) {
+            const [recipient, notificationId] = Object.entries(byRecipient)[0] ?? [];
+            if (recipient) requests[incidentId] = { notificationId, recipient };
+        }
+        return requests;
+    }
     function saveRequests(requests) { writeLocal(requestsKey(), requests); revision.value += 1; }
 
     /** Translates a coded refusal of the API into its i18n key; other failures keep their HTTP meaning. */
@@ -160,10 +185,12 @@ export default defineStore('incidentResponse', () => {
                     try {
                         const response = await api.recordEvacuationAction(record.incidentId, EvacuationActionAssembler.toResource(record));
                         const action = EvacuationActionAssembler.toEntityFromResource(response.data);
-                        if (action) {
-                            const known = (evacuations.value[record.incidentId] ?? []).filter((item) => item.id !== action.id);
-                            evacuations.value = { ...evacuations.value, [record.incidentId]: [...known, action] };
-                        }
+                        // Only an answer that returns the action with this same client identity proves that the API
+                        // stored it. An empty body leaves the record queued, so the next attempt sends it again; the
+                        // client identity makes that retry idempotent on the server.
+                        if (!action || action.clientActionId !== record.clientActionId) continue;
+                        const known = (evacuations.value[record.incidentId] ?? []).filter((item) => item.id !== action.id);
+                        evacuations.value = { ...evacuations.value, [record.incidentId]: [...known, action] };
                         saveOutbox(outbox().filter((item) => item.id !== record.id));
                         result.sent += 1;
                     } catch (cause) {
@@ -201,14 +228,17 @@ export default defineStore('incidentResponse', () => {
             requireCondition(incident.canNotify(user()), 'incidents.errors.notificationForbidden');
             const address = recipient?.trim().toLowerCase() ?? '';
             requireCondition(EMAIL.test(address), 'incidents.errors.notificationInvalid');
-            const requests = pendingNotificationRequests();
-            const previous = requests[incident.id];
-            const notificationId = previous?.recipient === address ? previous.notificationId : crypto.randomUUID();
-            saveRequests({ ...requests, [incident.id]: { notificationId, recipient: address } });
+            const requests = pendingRequestsByRecipient();
+            const forIncident = requests[incident.id] ?? {};
+            const notificationId = forIncident[address] ?? crypto.randomUUID();
+            saveRequests({ ...requests, [incident.id]: { ...forIncident, [address]: notificationId } });
             const response = await call(() => api.requestNotification(incident.id,
                 { notificationId, recipientEmail: address, recipientType: 'agency_staff' }));
-            const { [incident.id]: _answered, ...others } = pendingNotificationRequests();
-            saveRequests(others);
+            // Only this recipient is answered; any other recipient of the same incident keeps its pending identity.
+            const answered = pendingRequestsByRecipient();
+            const { [address]: _sent, ...stillPending } = answered[incident.id] ?? {};
+            if (Object.keys(stillPending).length) saveRequests({ ...answered, [incident.id]: stillPending });
+            else { const { [incident.id]: _done, ...others } = answered; saveRequests(others); }
             return storeNotification(incident.id, NotificationAssembler.toEntityFromResource(response.data));
         });
     }
