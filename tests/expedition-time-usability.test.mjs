@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { Duration } from '../src/expedition-setup/domain/model/duration.js';
 import {
     canEnableRoute,
@@ -71,4 +72,21 @@ test('every consecutive segment needs a valid expected time window, in checkpoin
         routeStartRequirements({ route: { ...route, status: 'enabled' }, checkpoints, windows }).map(({ met }) => met),
         [true, true, true],
     );
+});
+
+test('duration units and draft explanations have a text in English and Spanish', async () => {
+    const keys = [
+        'duration.days', 'duration.hours', 'duration.minutes',
+        'routeForm.estimatedDuration', 'routeForm.days', 'routeForm.hours', 'routeForm.durationTotal',
+        'routes.draftNeedsCheckpoint', 'routes.draftReadyToEnable', 'routes.status.draft', 'routes.status.enabled',
+        'validation.durationInvalid', 'validation.durationPartsInvalid',
+    ];
+    for (const language of ['en', 'es']) {
+        const messages = JSON.parse(await readFile(new URL(`../src/locales/${language}.json`, import.meta.url), 'utf8'));
+        for (const key of keys) {
+            const text = key.split('.').reduce((node, part) => node?.[part], messages);
+            assert.equal(typeof text, 'string', `${language}: ${key}`);
+            assert.equal(text.includes('|'), false, `${language}: ${key} must not be read as a plural form`);
+        }
+    }
 });

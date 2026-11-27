@@ -61,11 +61,12 @@
     "distance": "Distance",
     "elevationGain": "Elevation gain",
     "estimatedDuration": "Estimated duration",
-    "addCheckpoints": "Add checkpoints to enable this route.",
+    "draftNeedsCheckpoint": "Draft: add at least one checkpoint, then enable the route from Configure checkpoints.",
+    "draftReadyToEnable": "Draft: it already has checkpoints. Enable it from Configure checkpoints.",
     "noRoutesFound": "No routes found",
     "noRoutesDescription": "Change the filters or register a new route.",
     "status": {
-      "draft": "Draft — Pending checkpoints",
+      "draft": "Draft",
       "enabled": "Enabled"
     },
     "difficulty": {
@@ -77,7 +78,7 @@
   },
   "routeForm": {
     "title": "New route",
-    "description": "Define geographic and operational data. The route remains in draft until checkpoints are configured.",
+    "description": "Define geographic and operational data. The route is saved as a draft; you enable it from its checkpoints once it has at least one.",
     "identityTitle": "Route identity",
     "identityDescription": "Use a clear, unique name for the expedition corridor.",
     "geographicTitle": "Geographic data",
@@ -91,7 +92,10 @@
     "difficultyPlaceholder": "Select difficulty",
     "distanceKm": "Distance (km)",
     "elevationGainMeters": "Elevation gain (m)",
-    "estimatedDurationHours": "Estimated duration (hours)"
+    "estimatedDuration": "Estimated duration",
+    "days": "Days",
+    "hours": "Hours (0–23)",
+    "durationTotal": "Total: {duration}"
   },
   "validation": {
     "routeNameRequired": "Route name is required.",
@@ -101,6 +105,7 @@
     "elevationInvalid": "Elevation gain must be zero or greater.",
     "difficultyRequired": "Difficulty is required.",
     "durationInvalid": "Estimated duration must be greater than zero.",
+    "durationPartsInvalid": "Enter whole days and whole hours from 0 to 23.",
     "checkpointLocationRequired": "Checkpoint location is required.",
     "checkpointOrderInvalid": "Sequence order must be greater than zero.",
     "minimumTimeInvalid": "Minimum expected time must be zero or greater.",
@@ -585,5 +590,10 @@
     "activate": "Activate my assigned wearable",
     "waitWearable": "Your guide must assign a wearable before you can activate it.",
     "environment": "Offline route information"
+  },
+  "duration": {
+    "days": "{count} d",
+    "hours": "{count} h",
+    "minutes": "{count} min"
   }
 }

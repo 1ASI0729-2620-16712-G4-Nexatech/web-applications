@@ -61,11 +61,12 @@
     "distance": "Distancia",
     "elevationGain": "Desnivel acumulado",
     "estimatedDuration": "Duración estimada",
-    "addCheckpoints": "Agrega puntos de control para habilitar esta ruta.",
+    "draftNeedsCheckpoint": "Borrador: agrega al menos un punto de control y luego habilita la ruta desde Configurar puntos de control.",
+    "draftReadyToEnable": "Borrador: ya tiene puntos de control. Habilítala desde Configurar puntos de control.",
     "noRoutesFound": "No se encontraron rutas",
     "noRoutesDescription": "Cambia los filtros o registra una nueva ruta.",
     "status": {
-      "draft": "Borrador — Pendiente de puntos de control",
+      "draft": "Borrador",
       "enabled": "Habilitada"
     },
     "difficulty": {
@@ -77,7 +78,7 @@
   },
   "routeForm": {
     "title": "Nueva ruta",
-    "description": "Define los datos geográficos y operativos. La ruta permanece en borrador hasta configurar sus puntos de control.",
+    "description": "Define los datos geográficos y operativos. La ruta se guarda como borrador; la habilitas desde sus puntos de control cuando tenga al menos uno.",
     "identityTitle": "Identidad de la ruta",
     "identityDescription": "Usa un nombre claro y único para el corredor de expedición.",
     "geographicTitle": "Datos geográficos",
@@ -91,7 +92,10 @@
     "difficultyPlaceholder": "Selecciona la dificultad",
     "distanceKm": "Distancia (km)",
     "elevationGainMeters": "Desnivel acumulado (m)",
-    "estimatedDurationHours": "Duración estimada (horas)"
+    "estimatedDuration": "Duración estimada",
+    "days": "Días",
+    "hours": "Horas (0–23)",
+    "durationTotal": "Total: {duration}"
   },
   "validation": {
     "routeNameRequired": "El nombre de la ruta es obligatorio.",
@@ -101,6 +105,7 @@
     "elevationInvalid": "El desnivel acumulado debe ser cero o mayor.",
     "difficultyRequired": "La dificultad es obligatoria.",
     "durationInvalid": "La duración estimada debe ser mayor que cero.",
+    "durationPartsInvalid": "Ingresa días enteros y horas enteras de 0 a 23.",
     "checkpointLocationRequired": "La ubicación del punto de control es obligatoria.",
     "checkpointOrderInvalid": "El orden en la secuencia debe ser mayor que cero.",
     "minimumTimeInvalid": "El tiempo mínimo esperado debe ser cero o mayor.",
@@ -585,5 +590,10 @@
     "activate": "Activar mi wearable asignado",
     "waitWearable": "Tu guía debe asignarte un wearable antes de que puedas activarlo.",
     "environment": "Información de ruta offline"
+  },
+  "duration": {
+    "days": "{count} d",
+    "hours": "{count} h",
+    "minutes": "{count} min"
   }
 }

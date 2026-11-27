@@ -3,10 +3,13 @@ import { computed, onMounted, ref, toRefs } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import useExpeditionSetupStore from '../../application/expedition-setup.store.js';
+import { canEnableRoute } from '../../domain/model/route-readiness.js';
+import { useDurationFormat } from '../use-duration-format.js';
 
 const router = useRouter();
 const { t } = useI18n();
 const store = useExpeditionSetupStore();
+const { formatDaysAndHours } = useDurationFormat();
 
 const { routes, errors, routesLoaded } = toRefs(store);
 const { fetchRoutes } = store;
@@ -26,6 +29,7 @@ const difficultyOptions = computed(() => [
 const statusOptions = computed(() => [
   { label: t('routes.allStatuses'), value: 'all' },
   { label: t('routes.status.draft'), value: 'draft' },
+  { label: t('routes.status.enabled'), value: 'enabled' },
 ]);
 
 const filteredRoutes = computed(() => {
@@ -51,6 +55,10 @@ onMounted(() => {
   if (!store.routesLoaded) {
     fetchRoutes();
   }
+  // The checkpoints explain why each draft route is not enabled yet.
+  if (!store.checkpointsLoaded) {
+    store.fetchCheckpoints();
+  }
 });
 
 function navigateToNewRoute() {
@@ -63,15 +71,11 @@ function clearFilters() {
   selectedStatus.value = 'all';
 }
 
-function formatDuration(minutes) {
-  if (!Number.isFinite(minutes)) {
-    return '—';
-  }
-
-  const days = Math.floor(minutes / 1440);
-  const hours = Math.floor((minutes % 1440) / 60);
-
-  return days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+/** Why a draft route is not enabled yet; routes are enabled from their checkpoints, never when saved. */
+function draftReasonKey(route) {
+  return canEnableRoute({ checkpoints: store.getCheckpointsByRouteId(route.id) })
+      ? 'routes.draftReadyToEnable'
+      : 'routes.draftNeedsCheckpoint';
 }
 
 function getStatusLabel(status) {
@@ -190,8 +194,8 @@ function goToGroups(routeId) {
         <div class="route-card-header">
           <pv-tag
               :value="getStatusLabel(route.status)"
-              icon="pi pi-clock"
-              severity="warn"
+              :icon="route.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-clock'"
+              :severity="route.status === 'enabled' ? 'success' : 'warn'"
           />
 
           <span class="route-draft-label">
@@ -236,15 +240,15 @@ function goToGroups(routeId) {
             <span>{{ t('routes.estimatedDuration') }}</span>
             <strong>
               <i class="pi pi-clock" aria-hidden="true" />
-              {{ formatDuration(route.estimatedDurationMinutes) }}
+              {{ formatDaysAndHours(route.estimatedDurationMinutes) }}
             </strong>
           </div>
         </div>
 
-        <div v-if="route.status !== 'enabled'" class="route-card-footer">
+        <div v-if="route.status !== 'enabled' && store.checkpointsLoaded" class="route-card-footer">
           <span>
             <i class="pi pi-info-circle" aria-hidden="true" />
-            {{ t('routes.addCheckpoints') }}
+            {{ t(draftReasonKey(route)) }}
           </span>
         </div>
 
