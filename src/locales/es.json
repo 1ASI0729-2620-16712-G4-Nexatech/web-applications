@@ -260,7 +260,8 @@
     "type": {
       "delay": "Retraso en el tramo",
       "vital-sign-anomaly": "Anomalía en signos vitales",
-      "route-deviation": "Desvío de ruta"
+      "route-deviation": "Desvío de ruta",
+      "other": "Otra condición de riesgo"
     },
     "priority": {
       "low": "Prioridad baja",
@@ -273,6 +274,31 @@
       "acknowledged": "Reconocida",
       "resolved": "Resuelta",
       "dismissed": "Descartada"
+    },
+    "refresh": "Actualizar",
+    "raisedAt": "Generada {time} · {age}",
+    "capturedAt": "Hora de la observación",
+    "simulatedNotice": "Dato simulado · regla de demostración",
+    "groupRisk": "Riesgo del grupo",
+    "participant": "Participante {id}",
+    "rule": {
+      "manual": "Reportada manualmente",
+      "heart_rate_outside_baseline": "Frecuencia cardiaca fuera de la línea base del participante",
+      "simulated_route_deviation": "Distancia a la ruta mayor que el corredor permitido",
+      "checkpoint_delay": "Tiempo del tramo mayor que su ventana máxima"
+    },
+    "metric": {
+      "heart-rate": "Frecuencia cardiaca",
+      "route-position": "Distancia a la ruta",
+      "elapsed-time": "Tiempo del tramo"
+    },
+    "audit": {
+      "acknowledged": "Reconocida por {user} · {time}",
+      "resolved": "Resuelta por {user} · {time}",
+      "dismissed": "Descartada por {user} · {time}",
+      "you": "ti",
+      "user": "el usuario {id}",
+      "unknownUser": "un usuario no registrado"
     }
   },
   "operationsDashboard": {

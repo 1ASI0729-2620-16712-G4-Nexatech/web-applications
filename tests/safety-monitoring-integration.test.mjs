@@ -187,3 +187,25 @@ test('a tourist reads alerts but cannot act on them', async (t) => {
     assert.equal(harness.requests.some((request) => request.method === 'PATCH'), false);
     assert.deepEqual(safety.errors.map((error) => error.code), ['workflow.errors.forbidden']);
 });
+
+test('every alert code shown by the views has a text in English and Spanish', async () => {
+    const { readFile } = await import('node:fs/promises');
+    const codes = {
+        type: ['delay', 'vital-sign-anomaly', 'route-deviation', 'other'],
+        priority: ['low', 'medium', 'high', 'critical'],
+        status: ['active', 'acknowledged', 'resolved', 'dismissed'],
+        rule: ['manual', 'heart_rate_outside_baseline', 'simulated_route_deviation', 'checkpoint_delay'],
+        metric: ['heart-rate', 'route-position', 'elapsed-time'],
+        audit: ['acknowledged', 'resolved', 'dismissed', 'you', 'user', 'unknownUser'],
+    };
+    for (const language of ['en', 'es']) {
+        const messages = JSON.parse(await readFile(new URL(`../src/locales/${language}.json`, import.meta.url), 'utf8'));
+        const alerts = messages.earlyWarningAlerts;
+        for (const [group, keys] of Object.entries(codes)) {
+            for (const key of keys) assert.equal(typeof alerts[group]?.[key], 'string', `${language}: earlyWarningAlerts.${group}.${key}`);
+        }
+        for (const key of ['raisedAt', 'capturedAt', 'simulatedNotice', 'groupRisk', 'participant', 'refresh']) {
+            assert.equal(typeof alerts[key], 'string', `${language}: earlyWarningAlerts.${key}`);
+        }
+    }
+});
