@@ -4,11 +4,15 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { ManifestEntry } from '../../domain/model/manifest-entry.entity.js';
 import useExpeditionSetupStore from '../../application/expedition-setup.store.js';
+import usePreparationStore from '../../application/preparation.store.js';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const store = useExpeditionSetupStore();
+const prep = usePreparationStore();
+/** Manifest entries whose confidential health information the staff member chose to reveal on this screen. */
+const revealedHealth = ref(new Set());
 
 const expeditionGroupId = Number(route.params.groupId);
 
@@ -89,6 +93,17 @@ function submitForm() {
       });
 }
 
+function preparationOf(manifestEntry) {
+  return prep.forMember(manifestEntry.id);
+}
+
+function toggleHealth(manifestEntryId) {
+  const revealed = new Set(revealedHealth.value);
+  if (revealed.has(manifestEntryId)) revealed.delete(manifestEntryId);
+  else revealed.add(manifestEntryId);
+  revealedHealth.value = revealed;
+}
+
 function goBackToGroups() {
   if (isFieldGuideWorkspace.value) {
     router.push({ name: 'field-guide-workspace' });
@@ -102,6 +117,8 @@ onMounted(() => {
   Promise.all([
     store.fetchExpeditionGroups(),
     store.fetchManifestEntries(),
+    // The API returns only the preparations of the groups the staff member can see.
+    prep.load().catch(() => null),
   ]).then(() => {
     if (!expeditionGroup.value) {
       goBackToGroups();
@@ -254,6 +271,35 @@ onMounted(() => {
               <div>
                 <strong>{{ manifestEntry.fullName }}</strong>
                 <p>{{ manifestEntry.identityDocument }}</p>
+              </div>
+              <div class="participant-preparation">
+                <span class="vt-badge">
+                  {{ t(preparationOf(manifestEntry)?.ready ? 'manifest.preparationReady' : 'manifest.preparationPending') }}
+                </span>
+                <p v-if="preparationOf(manifestEntry)?.emergencyContact?.name">
+                  {{ t('manifest.emergencyContact') }}:
+                  {{ preparationOf(manifestEntry).emergencyContact.name }} ·
+                  {{ preparationOf(manifestEntry).emergencyContact.phone }}
+                  <template v-if="preparationOf(manifestEntry).emergencyContact.relationship">
+                    ({{ preparationOf(manifestEntry).emergencyContact.relationship }})
+                  </template>
+                </p>
+                <p v-else>{{ t('manifest.noEmergencyContact') }}</p>
+                <template v-if="preparationOf(manifestEntry)?.healthNotes">
+                  <button
+                      type="button"
+                      class="vt-link"
+                      :aria-expanded="revealedHealth.has(manifestEntry.id)"
+                      @click="toggleHealth(manifestEntry.id)"
+                  >
+                    {{ t(revealedHealth.has(manifestEntry.id) ? 'manifest.hideHealthInformation' : 'manifest.showHealthInformation') }}
+                  </button>
+                  <p v-if="revealedHealth.has(manifestEntry.id)" class="confidential-health">
+                    <strong>{{ t('manifest.confidential') }}</strong>
+                    {{ preparationOf(manifestEntry).healthNotes }}
+                  </p>
+                </template>
+                <p v-else>{{ t('manifest.noHealthInformation') }}</p>
               </div>
             </article>
           </div>
@@ -450,6 +496,39 @@ h3 {
   gap: 0.9rem;
   padding: 1rem 0;
   border-bottom: 1px solid var(--vt-border);
+}
+
+.participant-preparation {
+  margin-left: auto;
+  max-width: 55%;
+  text-align: right;
+}
+
+.participant-preparation p {
+  margin: 0.35rem 0 0;
+}
+
+.confidential-health {
+  padding: 0.6rem 0.8rem;
+  border: 1px dashed #c98c33;
+  border-radius: 8px;
+  background: #fff8ec;
+  color: var(--vt-text);
+  text-align: left;
+  white-space: pre-line;
+}
+
+@media (max-width: 720px) {
+  .manifest-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .participant-preparation {
+    margin-left: 0;
+    max-width: 100%;
+    text-align: left;
+  }
 }
 
 .manifest-item:last-child {

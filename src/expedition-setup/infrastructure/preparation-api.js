@@ -22,6 +22,11 @@ export class PreparationApi extends BaseApi {
         return this.http.put(`${preparationsPath}/${preparationId}/emergency-contact`, contact);
     }
 
+    /** Saves or clears the optional health information of the authenticated tourist. */
+    registerHealthInformation(preparationId, healthNotes) {
+        return this.http.put(`${preparationsPath}/${preparationId}/health-information`, { healthNotes });
+    }
+
     updateConsent(preparationId, granted) {
         return this.http.put(`${preparationsPath}/${preparationId}/consent`, { granted });
     }
