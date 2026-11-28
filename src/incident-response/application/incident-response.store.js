@@ -219,8 +219,8 @@ export default defineStore('incidentResponse', () => {
     }
 
     /**
-     * Requests an e-mail notification for a declared emergency. The identity is stored before the request, so repeating
-     * it after a lost answer reuses the same notificationId and the provider never sends a second message.
+     * Requests an e-mail notification for a declared emergency. The identity is kept until the API confirms that
+     * exact notification, so a retry reuses it if the answer is lost or incomplete.
      */
     async function requestNotification(group, incident, recipient) {
         return state.run(async () => {
@@ -234,12 +234,20 @@ export default defineStore('incidentResponse', () => {
             saveRequests({ ...requests, [incident.id]: { ...forIncident, [address]: notificationId } });
             const response = await call(() => api.requestNotification(incident.id,
                 { notificationId, recipientEmail: address, recipientType: 'agency_staff' }));
-            // Only this recipient is answered; any other recipient of the same incident keeps its pending identity.
+            const notification = NotificationAssembler.toEntityFromResource(response.data);
+            const confirmed = (response.status === 200 || response.status === 201)
+                && notification?.notificationId === notificationId
+                && notification.incidentId === incident.id
+                && notification.recipient === address;
+            requireCondition(confirmed, 'workflow.errors.requestFailed');
+
             const answered = pendingRequestsByRecipient();
-            const { [address]: _sent, ...stillPending } = answered[incident.id] ?? {};
-            if (Object.keys(stillPending).length) saveRequests({ ...answered, [incident.id]: stillPending });
-            else { const { [incident.id]: _done, ...others } = answered; saveRequests(others); }
-            return storeNotification(incident.id, NotificationAssembler.toEntityFromResource(response.data));
+            if (answered[incident.id]?.[address] === notificationId) {
+                const { [address]: _sent, ...stillPending } = answered[incident.id];
+                if (Object.keys(stillPending).length) saveRequests({ ...answered, [incident.id]: stillPending });
+                else { const { [incident.id]: _done, ...others } = answered; saveRequests(others); }
+            }
+            return storeNotification(incident.id, notification);
         });
     }
 

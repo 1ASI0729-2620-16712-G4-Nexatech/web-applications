@@ -40,6 +40,7 @@ async function startHarness(t) {
     const harness = {
         requests: [], incidents: new Map([[41, incidentResource()]]), actions: new Map(), notifications: new Map(),
         offline: false, loseNextResponse: false, emptyNextAction: false, nextActionId: 1, notificationMode: 'accept',
+        nextNotificationResponse: null,
     };
     const server = createHttpServer(async (request, response) => {
         let body = '';
@@ -114,6 +115,11 @@ async function startHarness(t) {
                 requestedAt: '2026-11-27T14:15:00+00:00', attemptCount: 1, lastErrorCode: harness.notificationMode === 'pending' ? 'provider_not_configured' : null,
                 deliveredAt: null };
             harness.notifications.set(item.notificationId, item);
+            if (harness.nextNotificationResponse) {
+                const { status, data } = harness.nextNotificationResponse;
+                harness.nextNotificationResponse = null;
+                return reply(status, data);
+            }
             return reply(existing ? 200 : 201, item);
         }
         const health = url.pathname.match(/^\/api\/v1\/participant-preparations\/(\d+)\/health-information$/);
@@ -400,4 +406,29 @@ test('each recipient of an incident keeps its own pending request, so a retry ne
     assert.equal(first.notificationId, lost.notificationId);
     assert.equal(harness.notifications.size, 2);
     assert.equal(incidents.pendingNotificationRequests()[41], undefined);
+});
+
+test('a notification keeps its identity until the API confirms the same request', async (t) => {
+    const harness = await startHarness(t);
+    harness.incidents.set(41, incidentResource({ status: 'emergency_declared', emergencyDeclaredAt: '2026-11-27T14:10:00+00:00' }));
+    const { incidents } = harness.signIn(harness.Roles.ADMIN);
+    await incidents.load(group, 42);
+    const incident = incidents.incidents[0];
+    const recipient = 'first@vitaltrek.test';
+
+    harness.nextNotificationResponse = { status: 204, data: null };
+    await assert.rejects(incidents.requestNotification(group, incident, recipient), { code: 'workflow.errors.requestFailed' });
+    const pending = incidents.pendingNotificationRequests()[incident.id];
+    const stored = harness.notifications.get(pending.notificationId);
+    assert.equal(stored.recipientEmail, recipient);
+
+    harness.nextNotificationResponse = { status: 200, data: { ...stored, notificationId: crypto.randomUUID() } };
+    await assert.rejects(incidents.requestNotification(group, incident, recipient), { code: 'workflow.errors.requestFailed' });
+    assert.deepEqual(incidents.pendingNotificationRequests()[incident.id], pending);
+    assert.equal(incidents.notifications[incident.id], undefined);
+
+    const confirmed = await incidents.requestNotification(group, incident, recipient);
+    assert.equal(confirmed.notificationId, pending.notificationId);
+    assert.equal(harness.notifications.size, 1);
+    assert.equal(incidents.pendingNotificationRequests()[incident.id], undefined);
 });
