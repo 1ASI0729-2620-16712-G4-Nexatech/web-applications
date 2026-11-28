@@ -117,7 +117,7 @@ function goBackToRoutes() {
 function getFieldGuideName(fieldGuideId) {
   return store.fieldGuides.find((fieldGuide) => (
       fieldGuide.id === fieldGuideId
-  ))?.name ?? '';
+  ))?.label ?? '';
 }
 
 function openGuideAssignment(expeditionGroup) {
@@ -375,7 +375,7 @@ onMounted(() => {
                       :id="`field-guide-${expeditionGroup.id}`"
                       v-model="guideAssignmentFieldGuideId"
                       :options="store.fieldGuides"
-                      option-label="name"
+                      option-label="label"
                       option-value="id"
                       :placeholder="t('expeditionGroups.fieldGuidePlaceholder')"
                       :invalid="Boolean(guideAssignmentFieldError)"

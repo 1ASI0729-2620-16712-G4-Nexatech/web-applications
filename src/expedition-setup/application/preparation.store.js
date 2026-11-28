@@ -2,6 +2,8 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 import { PreparationApi } from '../infrastructure/preparation-api.js';
 import { ParticipantPreparationAssembler as Assembler } from '../infrastructure/participant-preparation.assembler.js';
+import { MAX_HEALTH_NOTES } from '../domain/model/participant-preparation.entity.js';
+import { FieldGuideAssembler } from '../infrastructure/field-guide.assembler.js';
 import useIamStore from '../../iam/application/iam.store.js';
 import { Roles, canAccessGroup } from '../../iam/domain/user.entity.js';
 import { requireCondition } from '../../shared/domain/application-error.js';
@@ -44,6 +46,23 @@ export default defineStore('preparation', () => {
             return forMember(member.id);
         });
     }
+    /** The tourist saves or clears its own optional health information; nobody else can edit it. */
+    async function saveHealthInformation(group, member, healthNotes) {
+        return state.run(async () => {
+            const iam = useIamStore();
+            requireCondition(iam.user?.role === Roles.TOURIST && member.identityDocument === iam.user.identityDocument
+                && member.expeditionGroupId === group.id, 'workflow.errors.forbidden');
+            requireCondition(group.status !== 'finished', 'workflow.errors.started');
+            const current = forMember(member.id);
+            requireCondition(current, 'workflow.errors.preparation');
+            const notes = healthNotes?.trim() ?? '';
+            requireCondition(notes.length <= MAX_HEALTH_NOTES, 'healthInformation.tooLong');
+            const response = await api.registerHealthInformation(current.id, notes || null);
+            const updated = Assembler.toEntityFromResource(response.data);
+            preparations.value = preparations.value.map((preparation) => preparation.id === updated.id ? updated : preparation);
+            return updated;
+        });
+    }
     async function saveRouteContent(routeId, note, instructions) {
         return state.run(async () => {
             requireCondition(useIamStore().isAdmin, 'workflow.errors.forbidden');
@@ -57,9 +76,14 @@ export default defineStore('preparation', () => {
             await load();
         });
     }
-    async function createGuide(name) {
-        requireCondition(useIamStore().isAdmin && name.trim(), 'workflow.errors.forbidden');
-        return api.guides.create({ name: name.trim() });
+    /** Registers a guide profile; the API assigns the next operational code when none is given. */
+    async function createGuide(name, code = '') {
+        requireCondition(useIamStore().isAdmin, 'workflow.errors.forbidden');
+        requireCondition(name?.trim(), 'workflow.errors.invalid');
+        const operationalCode = code?.trim().toUpperCase() ?? '';
+        requireCondition(!operationalCode || /^[A-Z0-9][A-Z0-9-]{1,19}$/.test(operationalCode), 'guideAccounts.invalidCode');
+        const response = await api.guides.create({ name: name.trim(), ...(operationalCode ? { code: operationalCode } : {}) });
+        return FieldGuideAssembler.toEntityFromResource(response.data);
     }
-    return { preparations, wearables, notes, protocols, forMember, load, saveParticipant, saveRouteContent, createGuide, pending: state.pending, error: state.error };
+    return { preparations, wearables, notes, protocols, forMember, load, saveParticipant, saveHealthInformation, saveRouteContent, createGuide, pending: state.pending, error: state.error };
 });

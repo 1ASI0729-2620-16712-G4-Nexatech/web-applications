@@ -48,7 +48,7 @@ async function refresh() {
     setup.clearErrors();
     safety.clearErrors();
     const simulatedLoad = simulatedOperationsEnabled
-        ? Promise.allSettled([sync.load(), incidents.load(), closure.load()])
+        ? Promise.allSettled([sync.load(), closure.load()])
         : null;
     await Promise.all([
         setup.fetchRoutes(), setup.fetchExpeditionGroups(), setup.fetchManifestEntries(),
@@ -58,6 +58,8 @@ async function refresh() {
     requireCondition(group.value, 'workflow.errors.forbidden');
     if (hasTracking.value) await tracking.fetchGroupProgress(group.value);
     if (trackingSession.value?.sessionId) await safety.fetchAlertsForSession(trackingSession.value.sessionId);
+    // Incident Response reads the RESTful API; tourists have no incident access and receive an empty list.
+    if (hasTracking.value) await incidents.load(group.value, trackingSession.value?.sessionId ?? null);
     await simulatedLoad;
     offline.value = false;
     writeLocal(key, { savedAt: new Date().toISOString(), group: group.value, route: routeEntity.value, members: members.value, checkpoints: checkpoints.value, windows: setup.getExpectedTimeWindowsByRouteId(group.value.routeId), preparations: prep.preparations.filter((p) => p.expeditionGroupId === id), notes: notes.value, protocol: protocol.value, incidents: incidents.incidents.filter((i) => i.expeditionGroupId === id), summaries: closure.summaries.filter((s) => s.expeditionGroupId === id) });
@@ -70,7 +72,7 @@ async function load() {
             setup.expeditionGroups = [cached.group]; setup.routes = [cached.route]; setup.manifestEntries = cached.members; setup.checkpoints = cached.checkpoints; setup.expectedTimeWindows = cached.windows;
             prep.preparations = cached.preparations.map((p) => new ParticipantPreparation(p)); prep.notes = cached.notes; prep.protocols = cached.protocol ? [cached.protocol] : [];
             tracking.restoreGroupProgress(cached.group);
-            incidents.incidents = cached.incidents; closure.summaries = cached.summaries;
+            incidents.restore(cached.incidents); closure.summaries = cached.summaries;
             offline.value = true; error.value = ''; setup.clearErrors(); safety.clearErrors();
         }
     }
@@ -101,9 +103,9 @@ onMounted(load);
                           :session-active="trackingSession?.status === 'active'" />
       </template>
       <SyncPanel v-else-if="tab === 'sync' && hasTracking" />
+      <IncidentPanel v-else-if="tab === 'incidents'" />
       <NextSprintNotice v-else-if="!simulatedOperationsEnabled" />
       <SyncPanel v-else-if="tab === 'sync'" />
-      <IncidentPanel v-else-if="tab === 'incidents'" />
       <ClosurePanel v-else />
     </template>
   </section>

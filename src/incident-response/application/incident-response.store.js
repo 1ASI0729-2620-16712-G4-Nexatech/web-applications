@@ -1,85 +1,277 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { Incident } from '../domain/model/incident.entity.js';
+import {
+    EvacuationStatuses, Incident, IncidentSeverities, IncidentTypes,
+} from '../domain/model/incident.entity.js';
 import { IncidentResponseApi } from '../infrastructure/incident-response-api.js';
-import { IncidentAssembler } from '../infrastructure/incident.assembler.js';
+import {
+    EvacuationActionAssembler, IncidentAssembler, NotificationAssembler, toIncidentErrorKey,
+} from '../infrastructure/incident.assembler.js';
 import { createActionState } from '../../shared/application/action-state.js';
-import { requireCondition } from '../../shared/domain/application-error.js';
+import { ApplicationError, requireCondition } from '../../shared/domain/application-error.js';
 import { readLocal, writeLocal } from '../../shared/infrastructure/offline-storage.js';
 import useIamStore from '../../iam/application/iam.store.js';
 import { Roles, canAccessGroup } from '../../iam/domain/user.entity.js';
 
+/** Kind of the queued records of this store, so other offline queues never discard them. */
+export const EvacuationRecordKind = 'evacuation-action';
+
 const api = new IncidentResponseApi();
+const MAX_DESCRIPTION = 500, MAX_LOCATION = 200, MAX_NOTE = 500;
+const EMAIL = /^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/;
+/** Refusals that will not change by sending the same action again; the action stays visible with its reason. */
+const FINAL_REFUSALS = new Set([400, 404, 409, 422]);
+
 export default defineStore('incidentResponse', () => {
-    const incidents = ref([]), notifications = ref([]), evacuations = ref([]), rescues = ref([]), revision = ref(0);
+    const incidents = ref([]), evacuations = ref({}), notifications = ref({}), revision = ref(0);
     const state = createActionState();
-    const outboxKey = () => `vitaltrek-evacuations-v1-${useIamStore().user?.agencyId ?? 'anonymous'}`;
+    let flushing = false;
+
+    const user = () => useIamStore().user;
+    /** Queue of one user in one agency; each record keeps its group, session, incident and client identity. */
+    const outboxKey = () => `vitaltrek-evacuations-v2-${user()?.agencyId ?? 0}-${user()?.id ?? 0}`;
+    const legacyKey = () => `vitaltrek-evacuations-v1-${user()?.agencyId ?? 'anonymous'}`;
+    const requestsKey = () => `vitaltrek-notification-requests-v1-${user()?.agencyId ?? 0}-${user()?.id ?? 0}`;
+
+    /** Pending evacuation actions of the signed-in user, in capture order. */
     function outbox() { void revision.value; return readLocal(outboxKey(), []); }
-    function authorize(group, adminOnly = false) {
-        const iam = useIamStore();
-        requireCondition(canAccessGroup(iam.user, group) && (!adminOnly || iam.isAdmin), 'workflow.errors.forbidden');
+    /** Actions queued by the simulated TB1 version; they reference simulated incidents and are never sent. */
+    function legacyOutbox() { void revision.value; return readLocal(legacyKey(), []); }
+    function saveOutbox(records) { writeLocal(outboxKey(), records); revision.value += 1; }
+    /** Notification requests whose answer has not been received, by incident. */
+    /**
+     * Requests still waiting for an answer, kept by incident and then by recipient: one incident can lose the answer
+     * of several recipients at once, and each of them has to keep its own identity. Entries written by the previous
+     * version, which kept a single recipient per incident, are read in the current shape.
+     */
+    function pendingRequestsByRecipient() {
+        void revision.value;
+        const stored = readLocal(requestsKey(), {});
+        const requests = {};
+        for (const [incidentId, entry] of Object.entries(stored ?? {})) {
+            if (!entry || typeof entry !== 'object') continue;
+            requests[incidentId] = entry.notificationId && entry.recipient
+                ? { [entry.recipient]: entry.notificationId } : { ...entry };
+        }
+        return requests;
     }
-    async function load() {
-        const [i, n, e, r] = await Promise.all([api.incidents.getAll(), api.notifications.getAll(), api.evacuations.getAll(), api.rescues.getAll()]);
-        incidents.value = IncidentAssembler.toEntitiesFromResponse(i); notifications.value = n.data; evacuations.value = e.data; rescues.value = r.data;
+
+    /** Oldest request of each incident still waiting for an answer, which is the one the view offers to retry. */
+    function pendingNotificationRequests() {
+        const requests = {};
+        for (const [incidentId, byRecipient] of Object.entries(pendingRequestsByRecipient())) {
+            const [recipient, notificationId] = Object.entries(byRecipient)[0] ?? [];
+            if (recipient) requests[incidentId] = { notificationId, recipient };
+        }
+        return requests;
     }
-    async function declare(group, description, severity, alert = null) {
+    function saveRequests(requests) { writeLocal(requestsKey(), requests); revision.value += 1; }
+
+    /** Translates a coded refusal of the API into its i18n key; other failures keep their HTTP meaning. */
+    async function call(request) {
+        try { return await request(); }
+        catch (cause) {
+            const key = toIncidentErrorKey(cause);
+            if (key) throw new ApplicationError(key);
+            throw cause;
+        }
+    }
+
+    function isStaff() { return [Roles.ADMIN, Roles.GUIDE].includes(user()?.role); }
+    function authorize(group) {
+        requireCondition(isStaff() && canAccessGroup(user(), group), 'workflow.errors.forbidden');
+    }
+    function upsert(incident) {
+        if (!incident) return null;
+        incidents.value = [...incidents.value.filter((item) => item.id !== incident.id), incident]
+            .sort((first, second) => String(second.reportedAt).localeCompare(String(first.reportedAt)));
+        return incident;
+    }
+
+    /** Loads the incidents of the tracking session of a group; without a session only the open incidents remain. */
+    async function load(group, sessionId = null) {
+        return state.run(async () => {
+            if (!group || !isStaff()) { incidents.value = []; return []; }
+            const response = await call(() => sessionId ? api.getIncidentsBySession(sessionId) : api.getOpenIncidents());
+            const loaded = IncidentAssembler.toEntitiesFromResponse(response)
+                .filter((incident) => incident.expeditionGroupId === group.id);
+            incidents.value = [...incidents.value.filter((item) => item.expeditionGroupId !== group.id), ...loaded];
+            return loaded;
+        });
+    }
+
+    /** Restores incidents read from the offline workspace snapshot of the signed-in staff user. */
+    function restore(cached = []) {
+        incidents.value = (Array.isArray(cached) ? cached : []).filter((item) => item?.id).map((item) => new Incident(item));
+    }
+
+    /** Loads the persisted evacuation actions and, for administrators, the notifications of an incident. */
+    async function loadDetails(incident) {
+        return state.run(async () => {
+            const actions = await call(() => api.getEvacuationActions(incident.id));
+            evacuations.value = { ...evacuations.value, [incident.id]: EvacuationActionAssembler.toEntitiesFromResponse(actions) };
+            if (user()?.role === Roles.ADMIN) {
+                const sent = await call(() => api.getNotifications(incident.id));
+                notifications.value = { ...notifications.value, [incident.id]: NotificationAssembler.toEntitiesFromResponse(sent) };
+            }
+        });
+    }
+
+    /** Reports an incident of the active session, manually or from one of its open alerts. */
+    async function report(group, sessionId, { description, severity, type, alert = null }) {
         return state.run(async () => {
             authorize(group);
-            requireCondition(group.status === 'active', 'workflow.errors.notActive');
-            requireCondition(description.trim() && ['low', 'medium', 'high', 'critical'].includes(severity), 'workflow.errors.description');
+            requireCondition(Number.isInteger(sessionId) && sessionId > 0, 'incidents.errors.sessionRequired');
+            const text = description?.trim() ?? '';
+            requireCondition(text && text.length <= MAX_DESCRIPTION, 'workflow.errors.description');
+            requireCondition(IncidentSeverities.includes(severity) && IncidentTypes.includes(type));
             if (alert) {
-                requireCondition(alert.expeditionGroupId === group.id && ['active', 'acknowledged'].includes(alert.status));
-                requireCondition(!incidents.value.some((i) => i.alertId === alert.id), 'workflow.errors.incidentExists');
+                requireCondition(alert.sessionId === sessionId && alert.expeditionGroupId === group.id,
+                    'incidents.errors.alertOutsideSession');
+                requireCondition(alert.status !== 'dismissed', 'incidents.errors.alertDismissed');
             }
-            const incident = new Incident({ expeditionGroupId: group.id, description: description.trim(), severity, alertId: alert?.id ?? null });
-            const response = await api.incidents.create(incident);
-            await load();
-            return response.data;
+            const response = await call(() => api.reportIncident(IncidentAssembler.toReportResource({
+                sessionId, type, severity, description: text, alertId: alert?.id ?? null, reportedAt: new Date().toISOString(),
+            })));
+            return upsert(IncidentAssembler.toEntityFromResource(response.data));
         });
     }
-    async function transition(group, incident, status, note) {
+
+    /** Asks the API for one explicit transition and replaces the incident with the answer. */
+    async function transition(group, incident, action, note = '') {
         return state.run(async () => {
-            authorize(group, status === 'emergency_declared');
-            requireCondition(incident.expeditionGroupId === group.id);
-            const next = new Incident(incident).transition(status, note);
-            await api.incidents.patch(incident.id, next);
-            await load();
+            requireCondition(incident.expeditionGroupId === group.id, 'workflow.errors.forbidden');
+            requireCondition(incident.allows(action, user(), group), 'incidents.errors.transitionForbidden');
+            requireCondition((note?.trim().length ?? 0) <= MAX_NOTE, 'workflow.errors.description');
+            const response = await call(() => api.transition(incident.id, action, note?.trim() || null));
+            return upsert(IncidentAssembler.toEntityFromResource(response.data));
         });
     }
-    async function notify(group, incident, recipient, channel) {
-        return state.run(async () => {
-            authorize(group, true);
-            requireCondition(incident.expeditionGroupId === group.id && incident.status === 'emergency_declared');
-            requireCondition(recipient.trim() && ['email', 'sms', 'phone'].includes(channel));
-            await api.notifications.create({ incidentId: incident.id, expeditionGroupId: group.id, recipient: recipient.trim(), channel, status: 'simulated', recordedAt: new Date().toISOString() });
-            await load();
-        });
+
+    /**
+     * Captures an evacuation action in the local queue with a stable client identity and the capture time. It works
+     * offline; flushEvacuations sends it, and every retry reuses the same identity.
+     */
+    function recordEvacuation(group, incident, { description, location = '', status = 'in_progress' }) {
+        const current = user();
+        requireCondition(incident.expeditionGroupId === group.id && incident.canRecordEvacuation(current, group),
+            'incidents.errors.evacuationForbidden');
+        const text = description?.trim() ?? '', place = location?.trim() ?? '';
+        requireCondition(text && text.length <= MAX_DESCRIPTION && place.length <= MAX_LOCATION, 'workflow.errors.description');
+        requireCondition(EvacuationStatuses.includes(status));
+        const clientActionId = crypto.randomUUID();
+        const record = {
+            id: clientActionId, clientActionId, kind: EvacuationRecordKind, agencyId: current.agencyId, userId: current.id,
+            expeditionGroupId: group.id, sessionId: incident.sessionId, incidentId: incident.id, description: text,
+            location: place, status, recordedAt: new Date().toISOString(), rejection: null,
+        };
+        saveOutbox([...outbox(), record]);
+        return record;
     }
-    async function coordinate(group, incident, organization, phone, note) {
-        return state.run(async () => {
-            authorize(group, true);
-            requireCondition(incident.expeditionGroupId === group.id && incident.status === 'emergency_declared' && organization.trim() && phone.trim() && note.trim());
-            await api.rescues.create({ incidentId: incident.id, expeditionGroupId: group.id, organization: organization.trim(), phone: phone.trim(), note: note.trim(), status: 'requested', recordedAt: new Date().toISOString() });
-            await load();
-        });
-    }
-    function recordEvacuation(group, incident, note, location) {
-        authorize(group);
-        requireCondition(incident.expeditionGroupId === group.id && incident.status === 'emergency_declared' && note.trim() && location.trim());
-        writeLocal(outboxKey(), [...outbox(), { id: crypto.randomUUID(), expeditionGroupId: group.id, incidentId: incident.id, note: note.trim(), location: location.trim(), recordedAt: new Date().toISOString(), agencyId: group.agencyId }]);
-        revision.value += 1;
-    }
+
+    /**
+     * Sends the queued actions of a group, oldest first. Accepted or already persisted actions leave the queue; a
+     * definitive refusal stays visible with its reason; a network failure, an expired session or a server error keeps
+     * the rest of the queue untouched for the next attempt.
+     */
     async function flushEvacuations(group) {
         return state.run(async () => {
             authorize(group);
-            for (const item of outbox().filter((r) => r.expeditionGroupId === group.id)) {
-                if (!(await api.evacuations.getAll({ id: item.id })).data.length) await api.evacuations.create({ ...item, synchronizedAt: new Date().toISOString() });
-                writeLocal(outboxKey(), outbox().filter((r) => r.id !== item.id));
-            }
-            revision.value += 1;
-            await load();
+            if (flushing) throw new ApplicationError('workflow.errors.syncInProgress');
+            flushing = true;
+            const result = { sent: 0, rejected: 0 };
+            try {
+                for (const record of outbox().filter((item) => item.expeditionGroupId === group.id && !item.rejection)) {
+                    try {
+                        const response = await api.recordEvacuationAction(record.incidentId, EvacuationActionAssembler.toResource(record));
+                        const action = EvacuationActionAssembler.toEntityFromResource(response.data);
+                        // Only an answer that returns the action with this same client identity proves that the API
+                        // stored it. An empty body leaves the record queued, so the next attempt sends it again; the
+                        // client identity makes that retry idempotent on the server.
+                        if (!action || action.clientActionId !== record.clientActionId) continue;
+                        const known = (evacuations.value[record.incidentId] ?? []).filter((item) => item.id !== action.id);
+                        evacuations.value = { ...evacuations.value, [record.incidentId]: [...known, action] };
+                        saveOutbox(outbox().filter((item) => item.id !== record.id));
+                        result.sent += 1;
+                    } catch (cause) {
+                        const status = cause?.response?.status;
+                        if (!FINAL_REFUSALS.has(status)) throw cause;
+                        const code = toIncidentErrorKey(cause) ?? 'workflow.errors.invalid';
+                        saveOutbox(outbox().map((item) => item.id === record.id ? { ...item, rejection: { code, status } } : item));
+                        result.rejected += 1;
+                    }
+                }
+            } finally { flushing = false; }
+            return result;
         });
     }
-    return { incidents, notifications, evacuations, rescues, load, declare, transition, notify, coordinate, recordEvacuation, flushEvacuations, outbox, pending: state.pending, error: state.error };
+
+    /** Removes a refused action from the queue after the guide read its reason. */
+    function discardRejectedEvacuation(recordId) {
+        saveOutbox(outbox().filter((item) => !(item.id === recordId && item.rejection)));
+    }
+
+    function storeNotification(incidentId, notification) {
+        if (!notification) return null;
+        const known = (notifications.value[incidentId] ?? []).filter((item) => item.notificationId !== notification.notificationId);
+        notifications.value = { ...notifications.value, [incidentId]: [...known, notification] };
+        return notification;
+    }
+
+    /**
+     * Requests an e-mail notification for a declared emergency. The identity is kept until the API confirms that
+     * exact notification, so a retry reuses it if the answer is lost or incomplete.
+     */
+    async function requestNotification(group, incident, recipient) {
+        return state.run(async () => {
+            authorize(group);
+            requireCondition(incident.canNotify(user()), 'incidents.errors.notificationForbidden');
+            const address = recipient?.trim().toLowerCase() ?? '';
+            requireCondition(EMAIL.test(address), 'incidents.errors.notificationInvalid');
+            const requests = pendingRequestsByRecipient();
+            const forIncident = requests[incident.id] ?? {};
+            const notificationId = forIncident[address] ?? crypto.randomUUID();
+            saveRequests({ ...requests, [incident.id]: { ...forIncident, [address]: notificationId } });
+            const response = await call(() => api.requestNotification(incident.id,
+                { notificationId, recipientEmail: address, recipientType: 'agency_staff' }));
+            const notification = NotificationAssembler.toEntityFromResource(response.data);
+            const confirmed = (response.status === 200 || response.status === 201)
+                && notification?.notificationId === notificationId
+                && notification.incidentId === incident.id
+                && notification.recipient === address;
+            requireCondition(confirmed, 'workflow.errors.requestFailed');
+
+            const answered = pendingRequestsByRecipient();
+            if (answered[incident.id]?.[address] === notificationId) {
+                const { [address]: _sent, ...stillPending } = answered[incident.id];
+                if (Object.keys(stillPending).length) saveRequests({ ...answered, [incident.id]: stillPending });
+                else { const { [incident.id]: _done, ...others } = answered; saveRequests(others); }
+            }
+            return storeNotification(incident.id, notification);
+        });
+    }
+
+    /** Retries a pending notification with its persisted identity. */
+    async function retryNotification(incident, notificationId) {
+        return state.run(async () => {
+            requireCondition(user()?.role === Roles.ADMIN, 'incidents.errors.notificationForbidden');
+            const response = await call(() => api.retryNotification(incident.id, notificationId));
+            return storeNotification(incident.id, NotificationAssembler.toEntityFromResource(response.data));
+        });
+    }
+
+    /** Asks the server for the delivery state reported by the provider; the browser never sets it. */
+    async function checkNotification(incident, notificationId) {
+        return state.run(async () => {
+            requireCondition(user()?.role === Roles.ADMIN, 'incidents.errors.notificationForbidden');
+            const response = await call(() => api.checkNotification(incident.id, notificationId));
+            return storeNotification(incident.id, NotificationAssembler.toEntityFromResource(response.data));
+        });
+    }
+
+    return {
+        incidents, evacuations, notifications, load, restore, loadDetails, report, transition, recordEvacuation,
+        flushEvacuations, discardRejectedEvacuation, outbox, legacyOutbox, pendingNotificationRequests,
+        requestNotification, retryNotification, checkNotification, pending: state.pending, error: state.error,
+    };
 });
